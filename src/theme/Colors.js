@@ -1,0 +1,17 @@
+export const Colors = {
+  APPCOLOR: '#2ED1E2',
+  WHITE: '#FFFFFF',
+  GRAY: '#85939B',
+  RED: '#E64B32',
+  RED_LIGHT: '#FEF6F5',
+  GREEN: '#2B8F65',
+  BLACK: '#000',
+  LIGHT_NAVY: '#CACCE3',
+  BLUE: '#0038FF',
+  SKYBLUE: 'skyblue',
+  LIGHT_GRAY: '#ddd',
+  TEXT_COLOR: '#0E121E',
+  TRANSPARENT: 'rgba(0,0,0,0.2)',
+  LIGHT_BLACK: '#333',
+  TRANSPARENT_GRAY: '#eee',
+};
