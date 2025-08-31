@@ -1580,7 +1580,6 @@
 //   doneBtn: { backgroundColor: "green", padding: 10, borderRadius: 8, flex: 1, marginLeft: 5 },
 // });
 
-// AddSlotsScreen.js
 import React, {useState} from 'react';
 import {
   View,
@@ -1592,12 +1591,19 @@ import {
   ScrollView,
   Alert,
   SafeAreaView,
+  Image,
 } from 'react-native';
 import {HeaderCompt} from '../../../components';
 import Fonts from '../../../theme/Fonts';
 import {Colors} from '../../../theme/Colors';
+import imageindex from '../../../assets/images/imageindex';
+import {showErrorToast} from '../../../utils/HelperFuntions';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {decryptData} from '../../../utils/encryptionUtils';
+import ApiRequest from '../../../network/ApiRequest';
+import {ApiRoutes} from '../../../utils/ApiRoutes';
 
-const clinics = ['Clinic A', 'Clinic B', 'Clinic C'];
+// const clinics = ['Clinic A', 'Clinic B', 'Clinic C'];
 const weekdays = [
   'Monday',
   'Tuesday',
@@ -1625,8 +1631,10 @@ const toMinutes = time => {
 };
 
 const AddSlotsScreen = () => {
-  const [slotType, setSlotType] = useState('online');
+  const [slotType, setSlotType] = useState('Online');
   const [selectedClinic, setSelectedClinic] = useState(null);
+
+  const [clinics,setClinics]=useState([])
   const [selectedDay, setSelectedDay] = useState('Monday');
   // const [slots, setSlots] = useState({ Monday: [{ start: "", end: "" }] });
 
@@ -1646,35 +1654,6 @@ const AddSlotsScreen = () => {
 
   const [slots, setSlots] = useState(initSlots);
 
-  // // Add new slot (with validation)
-  // const handleAddSlot = () => {
-  //   const prevSlots = slots[selectedDay] || [];
-  //   const lastSlot = prevSlots[prevSlots.length - 1];
-
-  //   // validation: last slot must have start & end filled
-  //   if (!lastSlot?.start || !lastSlot?.end) {
-  //     Alert.alert("Incomplete Slot", "Please fill Start and End time before adding new slot.");
-  //     return;
-  //   }
-
-  //   let newSlot = { start: lastSlot.end, end: "" }; // auto start from last end
-  //   const updated = [...prevSlots, newSlot];
-  //   setSlots({ ...slots, [selectedDay]: updated });
-  // };
-
-  // // Remove slot (ensure at least 1 remains)
-  // const handleRemoveSlot = (index) => {
-  //   let newSlots = [...slots[selectedDay]];
-  //   newSlots.splice(index, 1);
-
-  //   // ensure minimum one slot
-  //   if (newSlots.length === 0) {
-  //     newSlots = [{ start: "", end: "" }];
-  //   }
-
-  //   setSlots({ ...slots, [selectedDay]: newSlots });
-  // };
-
   // Add new slot (with validation)
   const handleAddSlot = () => {
     const prevSlots = slots[selectedDay];
@@ -1682,7 +1661,7 @@ const AddSlotsScreen = () => {
 
     // validation: last slot must have start & end filled
     if (!lastSlot.start || !lastSlot.end) {
-      Alert.alert(
+      showErrorToast(
         'Incomplete Slot',
         'Please fill Start and End time before adding new slot.',
       );
@@ -1700,7 +1679,10 @@ const AddSlotsScreen = () => {
 
     // prevent deleting if only 1 slot is left
     if (prevSlots.length === 1) {
-      Alert.alert('Not Allowed', 'At least one slot must remain for each day.');
+      showErrorToast(
+        'Not Allowed',
+        'At least one slot must remain for each day.',
+      );
       return;
     }
 
@@ -1745,7 +1727,15 @@ const AddSlotsScreen = () => {
     <Modal transparent={true} visible={timeModalVisible} animationType="fade">
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Select Time</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 16,
+            }}>
+            <Text style={styles.modalTitle}>Select Time</Text>
+          </View>
           <View style={styles.pickerRow}>
             {/* Hours */}
             <FlatList
@@ -1812,6 +1802,37 @@ const AddSlotsScreen = () => {
     </Modal>
   );
 
+  const getDoctorAllClinic = async id => {
+    const token = await AsyncStorage.getItem('userToken');
+    // console.log("=================token==========",token)
+    try {
+      setOnlineCalenderdataLoading(true);
+      const response = await ApiRequest({
+        BASEURL: ApiRoutes.getDoctorAllClinic,
+        method: 'POST',
+        req: {doctorId: id},
+        token: token,
+      });
+
+      const decrypted = decryptData(response.data);
+
+      if (decrypted.code === 200 || decrypted.code === 201) {
+        console.log(
+          '----getDoctorAllClinic----------------',
+          JSON.stringify(decrypted),
+        );
+        setClinics(decrypted?.data);
+      } else {
+        setOnlineCalenderdataLoading(false);
+        console.error('Server error:', decrypted?.message);
+      }
+    } catch (error) {
+      console.error('Fetch Error:', error);
+    } finally {
+      setOnlineCalenderdataLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={{flex: 1}}>
       <HeaderCompt title={'Add Slots'} />
@@ -1819,7 +1840,7 @@ const AddSlotsScreen = () => {
         {/* Slot Type */}
         <Text style={styles.heading}>Select Slot Type</Text>
         <View style={styles.radioGroup}>
-          {['online', 'offline'].map(t => (
+          {['Online', 'Offline'].map(t => (
             <TouchableOpacity
               key={t}
               style={styles.radioBtn}
@@ -1836,7 +1857,7 @@ const AddSlotsScreen = () => {
         </View>
 
         {/* Clinic if offline */}
-        {slotType === 'offline' && (
+        {slotType === 'Offline' && (
           <View>
             <Text style={styles.heading}>Select Clinic</Text>
             <View style={styles.radioGroup}>
@@ -1865,8 +1886,11 @@ const AddSlotsScreen = () => {
               key={d}
               style={styles.radioBtn}
               onPress={() => setSelectedDay(d)}>
-              <Text
-                style={selectedDay === d ? styles.radioSelected : styles.radio}>
+              {/* Radio circle */}
+              <View style={styles.radioOuter}>
+                {selectedDay === d && <View style={styles.radioInner} />}
+              </View>
+              <Text style={selectedDay === d ? styles.radio : styles.radio}>
                 {d}
               </Text>
             </TouchableOpacity>
@@ -1884,7 +1908,10 @@ const AddSlotsScreen = () => {
                 setCurrentSlotIndex(idx);
                 setTimeModalVisible(true);
               }}>
-              <Text>{slot.start || 'Start Time'}</Text>
+              <Text
+                style={{fontFamily: Fonts.PoppinsMedium, color: Colors.BLACK}}>
+                {slot.start || 'Start Time'}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.timeBox}
@@ -1893,15 +1920,26 @@ const AddSlotsScreen = () => {
                 setCurrentSlotIndex(idx);
                 setTimeModalVisible(true);
               }}>
-              <Text>{slot.end || 'End Time'}</Text>
+              <Text
+                style={{fontFamily: Fonts.PoppinsMedium, color: Colors.BLACK}}>
+                {slot.end || 'End Time'}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.addBtn} onPress={handleAddSlot}>
-              <Text style={{color: '#fff', fontWeight: 'bold'}}>+</Text>
+              {/* <Text style={{color: '#fff', fontWeight: 'bold'}}>+</Text> */}
+              <Image
+                source={imageindex.add}
+                style={{height: 23, width: 23, tintColor: Colors.APPCOLOR}}
+              />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.removeBtn}
               onPress={() => handleRemoveSlot(idx)}>
-              <Text style={{color: '#fff', fontWeight: 'bold'}}>-</Text>
+              {/* <Text style={{color: '#fff', fontWeight: 'bold'}}>-</Text> */}
+              <Image
+                source={imageindex.cancel}
+                style={{height: 25, width: 25, tintColor: Colors.RED}}
+              />
             </TouchableOpacity>
           </View>
         ))}
@@ -1952,7 +1990,12 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: Colors.APPCOLOR,
   },
-  radio: {  borderRadius: 20,fontSize:16},
+  radio: {
+    borderRadius: 20,
+    fontSize: 16,
+    fontFamily: Fonts.PoppinsMedium,
+    color: Colors.BLACK,
+  },
   radioSelected: {
     borderWidth: 1,
     borderColor: '#008CBA',
@@ -1972,14 +2015,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addBtn: {
-    backgroundColor: 'green',
-    padding: 10,
-    borderRadius: 20,
+    // backgroundColor: 'green',
+    // padding: 10,
+    // borderRadius: 20,
     marginLeft: 5,
   },
   removeBtn: {
-    backgroundColor: 'red',
-    padding: 10,
+    // backgroundColor: 'red',
+    // padding: 10,
     borderRadius: 20,
     marginLeft: 5,
   },
@@ -1992,23 +2035,26 @@ const styles = StyleSheet.create({
   btnText: {color: '#fff', textAlign: 'center', fontWeight: '600'},
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
+    width: '90%',
     backgroundColor: '#fff',
-    width: '85%',
-    padding: 20,
-    borderRadius: 12,
+    borderRadius: 8,
+    padding: 16,
     elevation: 5,
-    height: 220,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    height: 300,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
+    color: Colors.BLACK,
   },
   pickerRow: {flexDirection: 'row', justifyContent: 'space-between'},
   optionBtn: {

@@ -36,4 +36,7 @@ export const ApiRoutes = {
     AppConstant.BASEURL + '/api/doctor/add-doctor-clinic-slot',
 
   getDoctorAllClinic: AppConstant.BASEURL + '/api/doctor/get-doctor-all-clinic',
+
+  getPurchasedSubscriptionPlan:
+    AppConstant.BASEURL + '/api/package/get-purchased-subscription-plan',
 };

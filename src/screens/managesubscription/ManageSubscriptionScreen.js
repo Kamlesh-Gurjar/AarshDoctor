@@ -1,5 +1,5 @@
 // screens/Profile/ManageSubscriptionScreen.js (adjust path as needed)
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -8,83 +8,216 @@ import {
   FlatList,
   Pressable,
   Alert,
+  ActivityIndicator,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import Icon from '@react-native-vector-icons/material-icons';
 import {ButtonCompt, HeaderCompt} from '../../components';
 import Fonts from '../../theme/Fonts';
 import {Colors} from '../../theme/Colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {ApiRoutes} from '../../utils/ApiRoutes';
+import ApiRequest from '../../network/ApiRequest';
+import {decryptData} from '../../utils/encryptionUtils';
+import {
+  formatDate,
+  showErrorToast,
+  showInfoToast,
+  showSuccessToast,
+} from '../../utils/HelperFuntions';
+import RNFetchBlob from 'react-native-blob-util';
 
-// Sample Data
-const subscriptionData = [
-  {
-    id: '1',
-    planName: 'Test Plan',
-    joinDate: '8/11/2025',
-    nextPayment: '11/11/2025',
-    price: 116.82,
-    status: 'PAID',
-  },
-  {
-    id: '2',
-    planName: 'Test Plan',
-    joinDate: '8/11/2025',
-    nextPayment: '11/11/2025',
-    price: 116.82,
-    status: 'PAID',
-  },
-];
+// const SubscriptionCard = ({item}) => {
+//   const handlewDownload = () => {};
 
+//   return (
+//     <View style={styles.card}>
+//       <View style={styles.cardHeader}>
+//         <Text style={styles.planName}>{item?.packageId?.name}</Text>
+//         <View style={styles.paidBadge}>
+//           <Text style={styles.paidText}>{item.paymentStatus}</Text>
+//         </View>
+//       </View>
+//       <Text style={styles.joinDate}>
+//         Joined on {formatDate(item.startDate)}
+//       </Text>
+//       <View style={styles.detailRow}>
+//         <Icon name="calendar-today" size={16} color={Colors.GRAY_DARK} />
+//         <Text style={styles.detailText}>
+//           Next payment is on {formatDate(item.endDate)}
+//         </Text>
+//       </View>
+//       <View style={styles.detailRow}>
+//         <Icon name="monetization-on" size={16} color={Colors.GRAY_DARK} />
+//         <Text style={styles.detailText}>Plan Price: ₹{item.price}</Text>
+//       </View>
+
+//       <ButtonCompt
+//         title={'Download Invoice'}
+//         onPress={handlewDownload}
+//         style={{borderRadius: 100}}
+//         // isLoading={true}
+//       />
+//     </View>
+//   );
+// };
 const SubscriptionCard = ({item}) => {
-  const handleCancel = () => {
-    Alert.alert(
-      'Cancel Plan',
-      `Are you sure you want to cancel the "${item.planName}"?`,
-      [{text: 'No'}, {text: 'Yes', style: 'destructive'}],
-    );
+  const handlewDownload = () => {
+    if (!item?.invoiceUrl) {
+      showInfoToast('Error', 'Invoice URL not found');
+      return;
+    }
+
+    const {dirs} = RNFetchBlob.fs;
+    const path =
+      Platform.OS === 'ios'
+        ? dirs.DocumentDir + `/invoice_${item.id}.pdf`
+        : dirs.DownloadDir + `/invoice_${item.id}.pdf`;
+
+    RNFetchBlob.config({
+      fileCache: true,
+      appendExt: 'pdf',
+      path: path,
+      addAndroidDownloads: {
+        useDownloadManager: true,
+        notification: true,
+        path: path,
+        description: 'Invoice PDF',
+      },
+    })
+      .fetch('GET', item.invoiceUrl)
+      .then(res => {
+        showSuccessToast('Success', `Invoice downloaded: ${res.path()}`);
+        console.log('Invoice saved to:', res.path());
+      })
+      .catch(err => {
+        console.error('Download Error:', err);
+        showErrorToast('Error', 'Failed to download invoice');
+      });
   };
 
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.planName}>{item.planName}</Text>
+        <Text style={styles.planName}>{item?.packageId?.name}</Text>
         <View style={styles.paidBadge}>
-          <Text style={styles.paidText}>{item.status}</Text>
+          <Text style={styles.paidText}>{item.paymentStatus}</Text>
         </View>
       </View>
-      <Text style={styles.joinDate}>Joined on {item.joinDate}</Text>
+
+      <Text style={styles.joinDate}>
+        Joined on {formatDate(item.startDate)}
+      </Text>
+
       <View style={styles.detailRow}>
         <Icon name="calendar-today" size={16} color={Colors.GRAY_DARK} />
         <Text style={styles.detailText}>
-          Next payment is on {item.nextPayment}
+          Next payment is on {formatDate(item.endDate)}
         </Text>
       </View>
+
       <View style={styles.detailRow}>
         <Icon name="monetization-on" size={16} color={Colors.GRAY_DARK} />
         <Text style={styles.detailText}>Plan Price: ₹{item.price}</Text>
       </View>
 
       <ButtonCompt
-        title={'Cancel Plan'}
-        onPress={handleCancel}
-        style={{backgroundColor: Colors.RED}}
+        title={'Download Invoice'}
+        onPress={handlewDownload}
+        style={{borderRadius: 100}}
       />
     </View>
   );
 };
 
 const ManageSubscriptionScreen = () => {
+  const [subscriptions, setsubscriptions] = useState([]);
+  const [subscriptionsLoading, setsubscriptionsLoading] = useState(false);
+
+  const getPurchasedSubscriptionPlan = async id => {
+    const token = await AsyncStorage.getItem('userToken');
+    console.log('=================token==========', token);
+    try {
+      setsubscriptionsLoading(true);
+      const response = await ApiRequest({
+        BASEURL: ApiRoutes.getPurchasedSubscriptionPlan,
+        method: 'POST',
+        req: {doctorId: id},
+        token: token,
+      });
+
+      const decrypted = decryptData(response.data);
+
+      if (decrypted.code === 200 || decrypted.code === 201) {
+        // console.log(
+        //   '----getPurchasedSubscriptionPlan----------------',
+        //   JSON.stringify(decrypted?.data),
+        // );
+        setsubscriptions(decrypted?.data);
+      } else {
+        setsubscriptionsLoading(false);
+        console.error('Server error:', decrypted?.message);
+      }
+    } catch (error) {
+      console.error('Fetch Error:', error);
+    } finally {
+      setsubscriptionsLoading(false);
+    }
+  };
+
+  const requestStoragePermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          {
+            title: 'Storage Permission Needed',
+            message: 'App needs access to your storage to download invoice',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Storage permission granted');
+          return true;
+        } else {
+          Alert.alert('Permission Denied', 'Storage permission is required.');
+          return false;
+        }
+      } catch (err) {
+        console.warn(err);
+        return false;
+      }
+    } else {
+      // iOS doesn't need storage permission
+      return true;
+    }
+  };
+
+  useEffect(() => {
+    requestStoragePermission();
+    getPurchasedSubscriptionPlan();
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <HeaderCompt title={'Manage Subscription'} />
-      <FlatList
-        data={subscriptionData}
-        renderItem={({item}) => <SubscriptionCard item={item} />}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContainer}
-        ListHeaderComponent={() => (
-          <Text style={styles.screenTitle}>Your Active Plans</Text>
-        )}
-      />
+      {subscriptionsLoading ? (
+        <ActivityIndicator size={'large'} style={{flex: 1}} />
+      ) : (
+        <FlatList
+          data={subscriptions}
+          renderItem={({item}) => <SubscriptionCard item={item} />}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContainer}
+          ListHeaderComponent={() => (
+            <Text style={styles.screenTitle}>Your Active Plans</Text>
+          )}
+        />
+      )}
     </SafeAreaView>
   );
 };

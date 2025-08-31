@@ -26,6 +26,7 @@ import {
   updateDoctorDetails,
   clearDoctorDetails,
 } from '../../redux/redux_slice/DoctorDetailsSlice';
+import {formatDate} from '../../utils/HelperFuntions';
 
 // This is a dummy component for Tag input.
 // You should install a library like 'react-native-tags-input' for full functionality.
@@ -45,13 +46,18 @@ const TagInput = ({label, tags, onTagsChange}) => {
     onTagsChange(newTags);
   };
 
+  const stripHtml = (html = '') => {
+    if (!html) return '';
+    return html.replace(/<\/?[^>]+(>|$)/g, ''); // remove HTML tags
+  };
+
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.label}>{label}</Text>
       <View style={styles.tagInputContainer}>
         {tags?.map((tag, index) => (
           <View key={index} style={styles.tag}>
-            <Text style={styles.tagText}>{tag}</Text>
+            <Text style={styles.tagText}>{tag?.replaceAll('&amp', '')}</Text>
             <TouchableOpacity onPress={() => removeTag(index)}>
               <Image style={styles.tagDelete} source={imageindex.cancel} />
             </TouchableOpacity>
@@ -202,7 +208,9 @@ const UpdateProfileScreen = () => {
               <TouchableOpacity
                 style={styles.dateInput}
                 onPress={() => setShowDatePicker(true)}>
-                <Text style={{color: Colors.BLACK}}>{formattedDate}</Text>
+                <Text style={{color: Colors.BLACK}}>
+                  {formatDate(doctor.dateOfBirth)}{' '}
+                </Text>
               </TouchableOpacity>
               {showDatePicker && (
                 <DateTimePicker
@@ -292,26 +300,24 @@ const UpdateProfileScreen = () => {
           </View>
 
           {/* Medical Registration Number and Registration Council */}
-          <View style={styles.row}>
-            <View style={[styles.inputContainer, {flex: 1}]}>
-              <Text style={styles.label}>Medical Registration Number</Text>
-              <TextInput
-                style={styles.input}
-                value={doctor.medicalRegistration?.registrationNumber}
-                onChangeText={text =>
-                  setDoctor({...doctor, medicalRegNo: text})
-                }
-              />
-            </View>
-            <View style={[styles.inputContainer, {flex: 1}]}>
-              <Text style={styles.label}>Registration Council</Text>
-              <TextInput
-                style={styles.input}
-                value={doctor.medicalRegistration?.registrationCouncil}
-                onChangeText={text => setDoctor({...doctor, regCouncil: text})}
-              />
-            </View>
+          {/* <View style={styles.row}> */}
+          <View style={[styles.inputContainer, {flex: 1}]}>
+            <Text style={styles.label}>Medical Registration Number</Text>
+            <TextInput
+              style={styles.input}
+              value={doctor.medicalRegistration?.registrationNumber}
+              onChangeText={text => setDoctor({...doctor, medicalRegNo: text})}
+            />
           </View>
+          <View style={[styles.inputContainer, {flex: 1}]}>
+            <Text style={styles.label}>Registration Council</Text>
+            <TextInput
+              style={styles.input}
+              value={doctor.medicalRegistration?.registrationCouncil}
+              onChangeText={text => setDoctor({...doctor, regCouncil: text})}
+            />
+          </View>
+          {/* </View> */}
 
           {/* Registration Year and Consultation Fees */}
           <View style={styles.row}>

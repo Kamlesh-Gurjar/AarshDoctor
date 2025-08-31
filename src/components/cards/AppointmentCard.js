@@ -357,7 +357,7 @@ const AppointmentCard = ({item, setActiveCardId, activeCardId}) => {
             style={{
               paddingHorizontal: 10,
               paddingVertical: 5,
-              backgroundColor: Colors.BLUE,
+              backgroundColor: Colors.APPCOLOR,
               borderRadius: 20,
             }}>
             <Text

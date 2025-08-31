@@ -782,6 +782,7 @@ const AddPrescriptionScreen = () => {
                 label="Full Name"
                 value={fullName}
                 onChangeText={setFullName}
+                style={{marginTop:0}}
               />
             </View>
           </View>

@@ -5,6 +5,8 @@ export default {
   lock: require('../images/lock.png'),
   search: require('../images/search.png'),
   cancel: require('../images/cancel.png'),
+  add: require('../images/add.png'),
+
   back: require('../images/back.png'),
   hide: require('../images/hide.png'),
   show: require('../images/show.png'),

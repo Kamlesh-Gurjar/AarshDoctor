@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderBottomWidth: 0.5,
+    borderBlockColor:Colors.LIGHT_GRAY
   },
   tabText: {
     fontSize: 14,
@@ -36,7 +37,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.WHITE,
     width: '80%',
     textAlign: 'center',
-    borderBottomWidth: 1.5,
+    borderBottomWidth: 2,
+    borderBottomColor:Colors.APPCOLOR
 
     // borderWidth: 0.5,
     // borderColor: Colors.APPCOLOR,

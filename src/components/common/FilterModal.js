@@ -35,8 +35,18 @@ const FilterModal = ({visible, onClose, onApply}) => {
 
   const renderOption = (item, selected, setSelected) => (
     <Pressable
-      style={[styles.option, selected === item && {backgroundColor: '#4a90e2'}]}
-      onPress={() => setSelected(item)}>
+      style={[
+        styles.option,
+        selected === item && {backgroundColor: Colors.APPCOLOR},
+      ]}
+      // onPress={() => setSelected(item)}
+      onPress={() => {
+        if (selected === item) {
+          setSelected(null); // already selected → unselect
+        } else {
+          setSelected(item); // select
+        }
+      }}>
       <Text style={[styles.optionText, selected === item && {color: '#fff'}]}>
         {item}
       </Text>
@@ -144,6 +154,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     fontFamily: Fonts.PoppinsRegular,
+    textTransform:"capitalize"
   },
   footer: {
     flexDirection: 'row',

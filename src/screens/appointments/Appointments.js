@@ -345,6 +345,7 @@ const Appointments = ({navigation}) => {
         ) : (
           <FlatList
             data={currentData}
+            // data={appointments}
             renderItem={({item}) => (
               <AppointmentCard
                 item={item}
@@ -395,11 +396,6 @@ const Appointments = ({navigation}) => {
         onClose={() => setIsFilterModalVisible(false)}
         onApply={handleApplyFilter}
       />
-      {/* <Modal>
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <Text style={{padding: 50, backgroundColor: '#fff',borderRadius:20,elevation:10,fontSize:40}}>🖕</Text>
-        </View>
-      </Modal> */}
     </SafeAreaView>
   );
 };
