@@ -9,5 +9,7 @@ export default {
   hide: require('../images/hide.png'),
   show: require('../images/show.png'),
   edit: require('../images/edit.png'),
-  nowifi:require('../images/nowifi.png')
+  nowifi: require('../images/nowifi.png'),
+  sort: require('../images/sort.png'),
+  nolatest: require('../images/nolatest.png'),
 };

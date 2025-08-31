@@ -9,6 +9,8 @@ import {
 import Icon from '@react-native-vector-icons/material-icons';
 import {ButtonCompt, HeaderCompt} from '../../../components';
 import {Colors} from '../../../theme/Colors';
+import Fonts from '../../../theme/Fonts';
+import styles from './styles.editslotes';
 
 const EditSlotsScreen = () => {
   const [slotType, setSlotType] = useState('Offline');
@@ -24,6 +26,7 @@ const EditSlotsScreen = () => {
   const days = [
     'Monday',
     'Tuesday',
+    'Wednusday',
     'Thursday',
     'Friday',
     'Saturday',
@@ -50,24 +53,46 @@ const EditSlotsScreen = () => {
             <TouchableOpacity
               style={styles.radioButton}
               onPress={() => setSlotType('Online')}>
-              <View
+              {/* <View
                 style={[
                   styles.radio,
                   slotType === 'Online' && styles.radioSelected,
                 ]}
-              />
-              <Text style={{color: Colors.BLACK}}>Online</Text>
+              /> */}
+              <View style={[styles.radio]}>
+                <View
+                  style={[
+                    {borderRadius: 50, padding: 6, margin: 2},
+                    slotType === 'Online' && styles.radioSelected,
+                  ]}
+                />
+              </View>
+              <Text
+                style={{color: Colors.BLACK, fontFamily: Fonts.PoppinsMedium}}>
+                Online
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.radioButton}
               onPress={() => setSlotType('Offline')}>
-              <View
+              {/* <View
                 style={[
                   styles.radio,
                   slotType === 'Offline' && styles.radioSelected,
                 ]}
-              />
-              <Text style={{color: Colors.BLACK}}>Offline</Text>
+              /> */}
+              <View style={[styles.radio]}>
+                <View
+                  style={[
+                    {borderRadius: 50, padding: 6, margin: 2},
+                    slotType === 'Offline' && styles.radioSelected,
+                  ]}
+                />
+              </View>
+              <Text
+                style={{color: Colors.BLACK, fontFamily: Fonts.PoppinsMedium}}>
+                Offline
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -77,7 +102,10 @@ const EditSlotsScreen = () => {
           <TouchableOpacity
             style={styles.dropdown}
             onPress={() => setIsClinicDropdownOpen(!isClinicDropdownOpen)}>
-            <Text style={{color: Colors.BLACK}}>{selectedClinic}</Text>
+            <Text
+              style={{color: Colors.BLACK, fontFamily: Fonts.PoppinsMedium}}>
+              {selectedClinic}
+            </Text>
             <Icon name="arrow-down" size={20} color="#000" />
           </TouchableOpacity>
           {isClinicDropdownOpen && (
@@ -118,10 +146,22 @@ const EditSlotsScreen = () => {
                 <View
                   style={[
                     styles.radio,
-                    selectedDay === day && styles.radioSelected,
-                  ]}
-                />
-                <Text style={{color: Colors.BLACK}}>{day}</Text>
+                    // selectedDay === day && styles.radioSelected,
+                  ]}>
+                  <View
+                    style={[
+                      {borderRadius: 50, padding: 6, margin: 2},
+                      selectedDay === day && styles.radioSelected,
+                    ]}
+                  />
+                </View>
+                <Text
+                  style={{
+                    color: Colors.BLACK,
+                    fontFamily: Fonts.PoppinsMedium,
+                  }}>
+                  {day}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -132,78 +172,5 @@ const EditSlotsScreen = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-
-  form: {
-    padding: 16,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 16,
-
-    marginBottom: 12,
-    color: Colors.BLACK,
-  },
-  radioContainer: {
-    flexDirection: 'row',
-  },
-  radioButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 24,
-  },
-  radio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#00A0A0',
-    marginRight: 8,
-  },
-  radioSelected: {
-    backgroundColor: '#00A0A0',
-  },
-  dropdown: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#00A0A0',
-    borderRadius: 8,
-  },
-  dropdownOptions: {
-    marginTop: 4,
-    borderWidth: 1,
-    borderColor: '#eee',
-    borderRadius: 8,
-  },
-  dropdownOption: {
-    padding: 12,
-    color: Colors.BLACK,
-  },
-  dropdownOptionSelected: {
-    backgroundColor: Colors.APPCOLOR,
-    borderRadius: 10,
-  },
-  dropdownOptionText: {
-    color: Colors.BLACK,
-  },
-  dropdownOptionTextSelected: {
-    color: Colors.WHITE,
-  },
-  daysContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-});
 
 export default EditSlotsScreen;

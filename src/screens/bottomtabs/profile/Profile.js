@@ -117,7 +117,7 @@ const Profile = () => {
                 </Text>
               </Pressable>
             ))}
-            <ButtonCompt  title={'Logout'} onPress={onLogout} />
+            <ButtonCompt title={'Logout'} onPress={onLogout} />
           </View>
         </View>
       </ScrollView>
@@ -151,14 +151,14 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.PoppinsMedium,
   },
   userEmail: {
-    color: Colors.GRAY_DARK,
+    color: Colors.GRAY,
     fontFamily: Fonts.PoppinsRegular,
     fontSize: 14,
   },
   menuContainer: {
     paddingHorizontal: 20,
     marginTop: 20,
-    paddingBottom:100
+    paddingBottom: 100,
   },
   menuItem: {
     flexDirection: 'row',
@@ -182,6 +182,6 @@ const styles = StyleSheet.create({
   highlightedText: {
     color: Colors.BLACK,
     fontFamily: Fonts.PoppinsMedium,
-    opacity:0.8
+    opacity: 0.8,
   },
 });

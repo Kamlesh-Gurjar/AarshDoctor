@@ -38,6 +38,8 @@ const LoginController = () => {
       const resData = await decryptData(response.data);
       const token = resData?.data?.token;
 
+      console.log('------', token);
+
       if ((resData?.code === 200 || resData?.code === 201) && token) {
         setIsLoading(false);
 

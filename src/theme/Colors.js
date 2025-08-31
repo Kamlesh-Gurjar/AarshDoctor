@@ -1,5 +1,6 @@
 export const Colors = {
-  APPCOLOR: '#2ED1E2',
+  APPCOLOR: '#1EABB8',
+  BACKGRONDCOLOR: '#f1f5f9',
   WHITE: '#FFFFFF',
   GRAY: '#85939B',
   RED: '#E64B32',
@@ -14,4 +15,7 @@ export const Colors = {
   TRANSPARENT: 'rgba(0,0,0,0.2)',
   LIGHT_BLACK: '#333',
   TRANSPARENT_GRAY: '#eee',
+  TEXT_DARK: '#333333',
+  TEXT_MEDIUM: '#666666',
+  TEXT_LIGHT: '#999999',
 };

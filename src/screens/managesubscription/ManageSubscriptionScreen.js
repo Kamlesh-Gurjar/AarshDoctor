@@ -90,11 +90,10 @@ const ManageSubscriptionScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: {flex: 1, backgroundColor: '#f8f9fa'},
+  safeArea: {flex: 1, backgroundColor: Colors.WHITE},
   listContainer: {padding: 20},
   screenTitle: {
     fontSize: 20,
-    fontFamily: Fonts.PoppinsSemiBold,
     marginBottom: 10,
     color: Colors.BLACK,
     fontFamily: Fonts.PoppinsMedium,

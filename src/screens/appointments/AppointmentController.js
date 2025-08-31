@@ -11,12 +11,16 @@ const AppointmentController = () => {
   const [originalData, setOriginalData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [allLatestAppointment, setAllLatestAppointment] = useState([]);
+  const [allLatestAppointmentLoading, setAllLatestAppointmentLoading] =
+    useState(false);
 
   const userData = useSelector(state => state?.user?.userData);
   const dispatch = useDispatch();
 
   const getAllAppointments = async id => {
     const token = await AsyncStorage.getItem('userToken');
+    // console.log("=================token==========",token)
     try {
       setIsLoading(true);
       const response = await ApiRequest({
@@ -27,7 +31,7 @@ const AppointmentController = () => {
       });
 
       const decrypted = decryptData(response.data);
-      console.log('----11-------', decrypted?.data);
+      // console.log('----11-------', decrypted?.data);
       if (response.status === 200 || response.status === 201) {
         setOriginalData(decrypted?.data || []);
         setFilteredData(decrypted?.data || []);
@@ -38,6 +42,36 @@ const AppointmentController = () => {
       console.error('Fetch Error:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const getAllLatestAppointments = async id => {
+    const token = await AsyncStorage.getItem('userToken');
+    // console.log("=================token==========",token)
+    try {
+      setAllLatestAppointmentLoading(true);
+      const response = await ApiRequest({
+        BASEURL: ApiRoutes.getAllLatestAppointments,
+        method: 'POST',
+        req: {doctorId: id},
+        token: token,
+      });
+
+      const decrypted = decryptData(response.data);
+      console.log(
+        '----getAllLatestAppointments----------------',
+        decrypted?.data,
+      );
+      if (response.status === 200 || response.status === 201) {
+        setAllLatestAppointment(decrypted?.data);
+      } else {
+        setAllLatestAppointmentLoading(false);
+        console.error('Server error:', decrypted?.message);
+      }
+    } catch (error) {
+      console.error('Fetch Error:', error);
+    } finally {
+      setAllLatestAppointmentLoading(false);
     }
   };
 
@@ -53,6 +87,7 @@ const AppointmentController = () => {
       const decrypted = decryptData(response?.data);
 
       await getAllAppointments(decrypted?.data?._id);
+      await getAllLatestAppointments(decrypted?.data?._id);
     } catch (error) {
       console.error('Fetch Error:', error);
     }
@@ -90,6 +125,8 @@ const AppointmentController = () => {
     refreshAppointments: getDoctorDetails,
     userData,
     dispatch,
+    allLatestAppointment,
+    allLatestAppointmentLoading,
   };
 };
 

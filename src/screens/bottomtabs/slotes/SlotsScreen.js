@@ -1,199 +1,314 @@
-// // src/screens/SlotsScreen.js
-// import React from 'react';
+// import React, {useCallback, useEffect, useState} from 'react';
 // import {
 //   View,
 //   Text,
 //   StyleSheet,
-//   ScrollView,
 //   TouchableOpacity,
 //   FlatList,
 //   SafeAreaView,
+//   ActivityIndicator,
 // } from 'react-native';
 // import MaterialIcons from '@react-native-vector-icons/material-icons';
 // import {Colors} from '../../../theme/Colors';
 // import Fonts from '../../../theme/Fonts';
-// import {HeaderCompt} from '../../../components';
+// import {ClinicCard, HeaderCompt} from '../../../components';
+// import {useFocusEffect, useNavigation} from '@react-navigation/native';
+// import styles from './styles.slotes';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+// import ApiRequest from '../../../network/ApiRequest';
+// import {ApiRoutes} from '../../../utils/ApiRoutes';
+// import {decryptData} from '../../../utils/encryptionUtils';
+// // import {it} from '@jest/globals';
 
-// const ClinicCard = ({clinicName, slots}) => (
-//   <View style={styles.card}>
-//     <View style={styles.cardHeader}>
-//       <Text style={styles.clinicName}>{clinicName}</Text>
-//       <View style={styles.icons}>
-//         <TouchableOpacity>
-//           <MaterialIcons name="edit" size={24} color="#3498db" />
-//         </TouchableOpacity>
-//         <TouchableOpacity style={{marginLeft: 15}}>
-//           <MaterialIcons name="delete" size={24} color="#e74c3c" />
-//         </TouchableOpacity>
-//       </View>
-//     </View>
-//     <View style={styles.slotsContainer}>
-//       {Object.entries(slots).map(([day, timeSlots]) => (
-//         <View key={day} style={styles.dayContainer}>
-//           <Text style={styles.dayText}>{day.toUpperCase()}</Text>
-//           {timeSlots.length > 0 ? (
-//             timeSlots.map((slot, index) => (
-//               <Text key={index} style={styles.slotText}>
-//                 {slot}
-//               </Text>
-//             ))
-//           ) : (
-//             <Text style={styles.noSlotText}>-</Text>
-//           )}
-//         </View>
-//       ))}
-//     </View>
-//   </View>
-// );
+// // const ClinicCard = ({clinicName, slots}) => {
+// //   const navigation = useNavigation();
 
-// const renderItem = ({item}) => (
-//   <ClinicCard clinicName={item?.name} slots={item?.slots} />
-// );
+// //   return (
+// //     <View style={styles.card}>
+// //       <View style={styles.cardHeader}>
+// //         <Text style={styles.clinicName}>{clinicName}</Text>
+// //         <View style={styles.icons}>
+// //           <TouchableOpacity onPress={() => navigation.navigate('EditSlots')}>
+// //             <MaterialIcons name="edit" size={24} color="#3498db" />
+// //           </TouchableOpacity>
+// //           <TouchableOpacity style={{marginLeft: 15}}>
+// //             <MaterialIcons name="delete" size={24} color="#e74c3c" />
+// //           </TouchableOpacity>
+// //         </View>
+// //       </View>
+// //       <View style={styles.slotsContainer}>
+// //         <FlatList
+// //           data={slots}
+// //           renderItem={({item}) => {
+// //             // console.log('--------itemmain-------', item);
+// //             return (
+// //               <View style={styles.dayContainer}>
+// //                 <Text style={styles.dayText}>{item?.dayOfWeek}</Text>
+// //                 {item?.slots?.length > 0 ? (
+// //                   item?.slots?.map((item, index) => (
+// //                     <Text style={styles.slotText}>
+// //                       {item?.startTime} → {item?.endTime}
+// //                     </Text>
+// //                   ))
+// //                 ) : (
+// //                   <Text style={styles.noSlotText}>-</Text>
+// //                 )}
+// //               </View>
+// //             );
+// //           }}
+// //         />
+// //       </View>
+// //     </View>
+// //   );
+// // };
 
-// const SlotsScreen = () => {
-//   const clinics = [
-//     {
-//       name: 'Motherhood Hospital',
-//       slots: {
-//         Monday: [],
-//         Tuesday: ['07:00 AM → 07:15 AM'],
-//         Wednesday: [],
-//         Thursday: [],
-//         Friday: [],
-//         Saturday: [],
-//         Sunday: [],
-//       },
-//     },
-//     {
-//       name: 'Pranshu Surgical And Maternity Center',
-//       slots: {
-//         Monday: ['07:00 AM → 07:45 AM', '10:00 AM → 10:45 AM'],
-//         Tuesday: [],
-//         Wednesday: ['10:45 AM → 11:00 AM'],
-//         Thursday: [],
-//         Friday: [],
-//         Saturday: [],
-//         Sunday: [],
-//       },
-//     },
-//   ];
+// const renderItem = ({item}) => {
+//   // console.log('------item--11------------', JSON.stringify(item));
 
 //   return (
-//     <SafeAreaView style={{flex: 1}}>
-//       <HeaderCompt title={'Slotes'} />
-//       <ScrollView style={styles.container}>
-//         <View style={styles.header}>
-//           <Text style={styles.headerTitle}>Your Slots</Text>
-//           <TouchableOpacity style={styles.addButton}>
-//             <MaterialIcons name="add" size={24} color="#fff" />
-//             <Text style={styles.addButtonText}>Add Slots</Text>
+//     <ClinicCard clinicName={item?.clinicName} slots={item?.slot?.slotsByDay} />
+//   );
+// };
+
+// // A reusable component to display the list of slots
+// const SlotsList = ({title, clinics}) => {
+//   // console.log('-- ---------------', JSON.stringify(clinics));
+//   const navigation = useNavigation();
+//   return (
+//     <View style={styles.listContainer}>
+//       <FlatList
+//         data={clinics}
+//         keyExtractor={(item, index) => item?.name + index?.toString()}
+//         renderItem={renderItem}
+//         showsVerticalScrollIndicator={false}
+//         contentContainerStyle={{paddingBottom: 100}}
+//         ListHeaderComponent={
+//           <View style={styles.header}>
+//             <Text style={styles.headerTitle}>{title}</Text>
+//             <TouchableOpacity
+//               onPress={() => navigation.navigate('AddSlots')}
+//               style={styles.addButton}>
+//               <MaterialIcons name="add" size={24} color={Colors.APPCOLOR} />
+//               <Text style={styles.addButtonText}>Add Slots</Text>
+//             </TouchableOpacity>
+//           </View>
+//         }
+//         ListEmptyComponent={() => (
+//           <Text style={{color: Colors.BLACK}}>No Slots Found.</Text>
+//         )}
+//       />
+//     </View>
+//   );
+// };
+
+// const SlotsScreen = () => {
+//   const [activeTab, setActiveTab] = useState('Offline');
+//   const navigation = useNavigation();
+//   const [offlineClinics, setOfflineClinics] = useState([]);
+//   const [onlineClinics, setOnlineClinics] = useState([]);
+
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [isOnlineLoading, setIsOnlineLoading] = useState(false);
+
+//   const getAllOfflineSlotes = async () => {
+//     const token = await AsyncStorage.getItem('userToken');
+//     try {
+//       setIsLoading(true);
+//       const response = await ApiRequest({
+//         BASEURL: ApiRoutes.getAllOfflineSlotes,
+//         method: 'POST',
+//         token: token,
+//       });
+
+//       const decrypted = decryptData(response.data);
+//       console.log(
+//         '----getAllOfflineSlotes-------',
+//         JSON.stringify(decrypted?.data),
+//       );
+//       if (response.status === 200 || response.status === 201) {
+//         setIsLoading(false);
+
+//         setOfflineClinics(decrypted?.data || []);
+//       } else {
+//         setIsLoading(false);
+
+//         console.error('Server error:', decrypted?.message);
+//       }
+//     } catch (error) {
+//       console.error('Fetch Error:', error);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   const getAllOnlineSlotes = async id => {
+//     const token = await AsyncStorage.getItem('userToken');
+//     try {
+//       setIsOnlineLoading(true);
+//       const response = await ApiRequest({
+//         BASEURL: ApiRoutes.getAllOnlineSlotes,
+//         method: 'POST',
+//         token: token,
+//         req: {doctorId: id},
+//       });
+
+//       const decrypted = decryptData(response.data);
+
+//       console.log(
+//         '----getAllOnlineSlotes-------',
+//         JSON.stringify(decrypted?.data?.slotsByDay),
+//       );
+//       if (response.status === 200 || response.status === 201) {
+//         setOnlineClinics(decrypted?.data?.slotsByDay || []);
+//       } else {
+//         setIsOnlineLoading(false);
+
+//         console.error('Server error:', decrypted?.message);
+//       }
+//     } catch (error) {
+//       setIsOnlineLoading(false);
+
+//       console.error('Fetch Error:', error);
+//     } finally {
+//       setIsOnlineLoading(false);
+//     }
+//   };
+
+//   const getDoctorDetails = async () => {
+//     const token = await AsyncStorage.getItem('userToken');
+//     try {
+//       const response = await ApiRequest({
+//         BASEURL: ApiRoutes.getDoctorDetails,
+//         method: 'POST',
+//         token: token,
+//       });
+
+//       const decrypted = decryptData(response?.data);
+
+//       await getAllOnlineSlotes(decrypted?.data?._id);
+//     } catch (error) {
+//       console.error('Fetch Error:', error);
+//     }
+//   };
+
+//   useEffect(() => {
+//     getDoctorDetails();
+//   }, []);
+
+//   useFocusEffect(
+//     useCallback(() => {
+//       getAllOfflineSlotes();
+//       getAllOnlineSlotes();
+
+//       // Agar cleanup karna hai to return ek function
+//       return () => {
+//         console.log('Screen unfocused, cleanup here if needed');
+//       };
+//     }, []),
+//   );
+
+//   return (
+//     <SafeAreaView style={styles.safeArea}>
+//       <HeaderCompt title={'Slots'} />
+//       <View style={styles.container}>
+//         {/* Custom Tab Bar */}
+//         <View style={styles.tabBar}>
+//           <TouchableOpacity
+//             style={styles.tabItem}
+//             onPress={() => setActiveTab('Offline')}>
+//             <Text
+//               style={[
+//                 styles.tabText,
+//                 activeTab === 'Offline' && styles.activeTabText,
+//               ]}>
+//               Offline Slots
+//             </Text>
+//             {activeTab === 'Offline' && <View style={styles.activeIndicator} />}
+//           </TouchableOpacity>
+//           <TouchableOpacity
+//             style={styles.tabItem}
+//             onPress={() => setActiveTab('Online')}>
+//             <Text
+//               style={[
+//                 styles.tabText,
+//                 activeTab === 'Online' && styles.activeTabText,
+//               ]}>
+//               Online Slots
+//             </Text>
+//             {activeTab === 'Online' && <View style={styles.activeIndicator} />}
 //           </TouchableOpacity>
 //         </View>
 
-//         <FlatList
-//           data={clinics}
-//           keyExtractor={(item, index) =>
-//             item.id?.toString() || index.toString()
-//           } // Use unique id if available
-//           renderItem={renderItem}
-//           initialNumToRender={10} // Renders only a few items at first for performance
-//           maxToRenderPerBatch={10} // Limits items rendered per batch
-//           windowSize={5} // Number of screens worth of content to render
-//           removeClippedSubviews={true} // Unmounts off-screen items
-//           showsVerticalScrollIndicator={false}
-//           contentContainerStyle={{paddingBottom: 100}}
-//         />
-//       </ScrollView>
+//         {/* Conditional Content */}
+
+//         {activeTab === 'Offline' ? (
+//           isLoading ? (
+//             <ActivityIndicator size={'large'} style={{flex: 1}} />
+//           ) : (
+//             <SlotsList title="Your Offline Slots" clinics={offlineClinics} />
+//           )
+//         ) : activeTab === 'Online' && isOnlineLoading ? (
+//           <ActivityIndicator size={'large'} style={{flex: 1}} />
+//         ) : (
+//           <>
+//             <View style={styles.header}>
+//               <Text style={styles.headerTitle}>Your Online Slots</Text>
+//               <TouchableOpacity
+//                 onPress={() => navigation.navigate('AddSlots')}
+//                 style={styles.addButton}>
+//                 <MaterialIcons name="add" size={24} color={Colors.APPCOLOR} />
+//                 <Text style={styles.addButtonText}>Add Slots</Text>
+//               </TouchableOpacity>
+//             </View>
+
+//             <View style={styles.card}>
+//               <View style={[styles.icons, {justifyContent: 'flex-end'}]}>
+//                 <TouchableOpacity
+//                   onPress={() => navigation.navigate('EditSlots')}>
+//                   <MaterialIcons name="edit" size={24} color="#3498db" />
+//                 </TouchableOpacity>
+//                 {/* <TouchableOpacity style={{marginLeft: 15}}>
+//                 <MaterialIcons name="delete" size={24} color="#e74c3c" />
+//               </TouchableOpacity> */}
+//               </View>
+//               <FlatList
+//                 data={onlineClinics}
+//                 keyExtractor={(item, index) => item?._id}
+//                 renderItem={({item, index}) => {
+//                   return (
+//                     <View style={styles.dayContainer}>
+//                       <Text style={styles.dayText}>{item?.dayOfWeek}</Text>
+//                       <View
+//                         style={{
+//                           flexDirection: 'row',
+//                           flexWrap: 'wrap',
+//                           justifyContent: 'space-between',
+//                         }}>
+//                         {item?.slots?.length > 0 ? (
+//                           item?.slots?.map((item, index) => (
+//                             <Text style={styles.slotText}>
+//                               {item?.startTime} → {item?.endTime}
+//                             </Text>
+//                           ))
+//                         ) : (
+//                           <Text style={styles.noSlotText}>-</Text>
+//                         )}
+//                       </View>
+//                     </View>
+//                   );
+//                 }}
+//               />
+//             </View>
+//           </>
+//         )}
+//       </View>
 //     </SafeAreaView>
 //   );
 // };
 
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: Colors.WHITE,
-//   },
-//   header: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     padding: 20,
-//   },
-//   headerTitle: {
-//     fontSize: 20,
-//     color: Colors.BLACK,
-//     fontFamily: Fonts.PoppinsMedium,
-//   },
-//   addButton: {
-//     flexDirection: 'row',
-//     backgroundColor: Colors.APPCOLOR,
-//     paddingVertical: 10,
-//     paddingHorizontal: 15,
-//     borderRadius: 100,
-//     alignItems: 'center',
-//   },
-//   addButtonText: {
-//     color: Colors.WHITE,
-//     marginLeft: 5,
-//   },
-//   card: {
-//     backgroundColor: Colors.WHITE,
-//     borderRadius: 10,
-//     padding: 15,
-//     marginHorizontal: 20,
-//     marginBottom: 20,
-//     shadowColor: Colors.BLACK,
-//     shadowOffset: {width: 0, height: 2},
-//     shadowOpacity: 0.1,
-//     shadowRadius: 5,
-//     elevation: 3,
-//   },
-//   cardHeader: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     borderBottomWidth: 0.5,
-//     borderBottomColor: Colors.GRAY,
-//     paddingBottom: 10,
-//   },
-//   clinicName: {
-//     fontSize: 16,
-//     color: Colors.BLACK,
-//     flex: 1,
-//     fontFamily: Fonts.PoppinsMedium,
-//     marginRight: 4,
-//   },
-//   icons: {
-//     flexDirection: 'row',
-//   },
-//   slotsContainer: {
-//     paddingTop: 10,
-//   },
-//   dayContainer: {
-//     marginBottom: 5,
-//   },
-//   dayText: {
-//     fontSize: 14,
-//     color: Colors.BLACK,
-//     // marginBottom: 5,
-//     fontFamily: Fonts.PoppinsMedium,
-//   },
-//   slotText: {
-//     fontSize: 14,
-//     color: Colors.BLACK,
-//     fontFamily: Fonts.PoppinsRegular,
-//   },
-//   noSlotText: {
-//     fontSize: 14,
-//     color: Colors.BLACK,
-//     fontFamily: Fonts.PoppinsRegular,
-//   },
-// });
-
 // export default SlotsScreen;
 
-// src/screens/SlotsScreen.js
-import React, {useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -201,61 +316,31 @@ import {
   TouchableOpacity,
   FlatList,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {Colors} from '../../../theme/Colors';
 import Fonts from '../../../theme/Fonts';
-import {HeaderCompt} from '../../../components';
-import {useNavigation} from '@react-navigation/native';
+import {ClinicCard, HeaderCompt} from '../../../components';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import styles from './styles.slotes';
+// Import the controller
+import SlotsController from './SlotesController'; // Adjust the path as necessary
 
-const ClinicCard = ({clinicName, slots}) => {
-  const navigation = useNavigation();
-
+const renderItem = ({item}) => {
   return (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.clinicName}>{clinicName}</Text>
-        <View style={styles.icons}>
-          <TouchableOpacity onPress={() => navigation.navigate('EditSlots')}>
-            <MaterialIcons name="edit" size={24} color="#3498db" />
-          </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: 15}}>
-            <MaterialIcons name="delete" size={24} color="#e74c3c" />
-          </TouchableOpacity>
-        </View>
-      </View>
-      <View style={styles.slotsContainer}>
-        {Object.entries(slots).map(([day, timeSlots]) => (
-          <View key={day} style={styles.dayContainer}>
-            <Text style={styles.dayText}>{day.toUpperCase()}</Text>
-            {timeSlots.length > 0 ? (
-              timeSlots.map((slot, index) => (
-                <Text key={index} style={styles.slotText}>
-                  {slot}
-                </Text>
-              ))
-            ) : (
-              <Text style={styles.noSlotText}>-</Text>
-            )}
-          </View>
-        ))}
-      </View>
-    </View>
+    <ClinicCard clinicName={item?.clinicName} slots={item?.slot?.slotsByDay} />
   );
 };
 
-const renderItem = ({item}) => (
-  <ClinicCard clinicName={item?.name} slots={item?.slots} />
-);
-
 // A reusable component to display the list of slots
-const SlotsList = ({title, clinics}) => {
+const SlotsList = ({title, clinics, onAddSlotsPress}) => {
   const navigation = useNavigation();
   return (
     <View style={styles.listContainer}>
       <FlatList
         data={clinics}
-        keyExtractor={(item, index) => item.name + index.toString()}
+        keyExtractor={(item, index) => item?.clinicName + index?.toString()} // Using clinicName and index for unique key
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{paddingBottom: 100}}
@@ -263,66 +348,47 @@ const SlotsList = ({title, clinics}) => {
           <View style={styles.header}>
             <Text style={styles.headerTitle}>{title}</Text>
             <TouchableOpacity
-              onPress={() => navigation.navigate('AddSlots')}
+              onPress={onAddSlotsPress}
               style={styles.addButton}>
-              <MaterialIcons name="add" size={24} color="#fff" />
+              <MaterialIcons name="add" size={24} color={Colors.APPCOLOR} />
               <Text style={styles.addButtonText}>Add Slots</Text>
             </TouchableOpacity>
           </View>
         }
+        ListEmptyComponent={() => (
+          <Text style={styles.emptyListText}>No Slots Found.</Text>
+        )}
       />
     </View>
   );
 };
 
 const SlotsScreen = () => {
-  const [activeTab, setActiveTab] = useState('Offline'); // 'Offline' or 'Online'
   const navigation = useNavigation();
-  const offlineClinics = [
-    {
-      name: 'Motherhood Hospital',
-      slots: {
-        Monday: [],
-        Tuesday: ['07:00 AM → 07:15 AM'],
-        Wednesday: [],
-        Thursday: [],
-        Friday: [],
-        Saturday: [],
-        Sunday: [],
-      },
-    },
-    {
-      name: 'Pranshu Surgical And Maternity Center',
-      slots: {
-        Monday: ['07:00 AM → 07:45 AM', '10:00 AM → 10:45 AM'],
-        Tuesday: [],
-        Wednesday: ['10:45 AM → 11:00 AM'],
-        Thursday: [],
-        Friday: [],
-        Saturday: [],
-        Sunday: [],
-      },
-    },
-  ];
 
-  const onlineClinics = [
-    {
-      name: 'Online Clinic A',
-      slots: {
-        Monday: ['09:00 AM → 09:30 AM'],
-        Tuesday: [],
-        Wednesday: ['02:00 PM → 02:30 PM'],
-        Thursday: [],
-        Friday: ['11:00 AM → 11:30 AM'],
-        Saturday: [],
-        Sunday: [],
-      },
-    },
-  ];
+  // Call the controller hook and destructure its returned values
+  const {
+    activeTab,
+    setActiveTab,
+    offlineClinics,
+    onlineClinics,
+    isLoadingOffline,
+    isLoadingOnline,
+  } = SlotsController(); // Use the hook here
+
+  // Handler for Add Slots button press
+  const handleAddSlotsPress = () => {
+    navigation.navigate('AddSlots');
+  };
+
+  // Handler for Edit Slots button press
+  const handleEditSlotsPress = () => {
+    navigation.navigate('EditSlots');
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <HeaderCompt title={'Slotes'} />
+      <HeaderCompt title={'Slots'} />
       <View style={styles.container}>
         {/* Custom Tab Bar */}
         <View style={styles.tabBar}>
@@ -334,7 +400,7 @@ const SlotsScreen = () => {
                 styles.tabText,
                 activeTab === 'Offline' && styles.activeTabText,
               ]}>
-              Offline Slotes
+              Offline Slots
             </Text>
             {activeTab === 'Offline' && <View style={styles.activeIndicator} />}
           </TouchableOpacity>
@@ -346,7 +412,7 @@ const SlotsScreen = () => {
                 styles.tabText,
                 activeTab === 'Online' && styles.activeTabText,
               ]}>
-              Online Slotes
+              Online Slots
             </Text>
             {activeTab === 'Online' && <View style={styles.activeIndicator} />}
           </TouchableOpacity>
@@ -354,129 +420,93 @@ const SlotsScreen = () => {
 
         {/* Conditional Content */}
         {activeTab === 'Offline' ? (
-          <SlotsList title="Your Offline Slots" clinics={offlineClinics} />
+          isLoadingOffline ? (
+            <ActivityIndicator
+              size={'large'}
+              style={styles.activityIndicator}
+            />
+          ) : (
+            <SlotsList
+              title="Your Offline Slots"
+              clinics={offlineClinics}
+              onAddSlotsPress={handleAddSlotsPress}
+            />
+          )
         ) : (
-          <SlotsList title="Your Online Slots" clinics={onlineClinics} />
+          // Online Slots tab content
+          <>
+            {isLoadingOnline ? (
+              <ActivityIndicator
+                size={'large'}
+                style={styles.activityIndicator}
+              />
+            ) : (
+              <>
+                <View style={styles.header}>
+                  <Text style={styles.headerTitle}>Your Online Slots</Text>
+                  <TouchableOpacity
+                    onPress={handleAddSlotsPress}
+                    style={styles.addButton}>
+                    <MaterialIcons
+                      name="add"
+                      size={24}
+                      color={Colors.APPCOLOR}
+                    />
+                    <Text style={styles.addButtonText}>Add Slots</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.card}>
+                  <View style={[styles.icons, {justifyContent: 'flex-end'}]}>
+                    <TouchableOpacity onPress={handleEditSlotsPress}>
+                      <MaterialIcons name="edit" size={24} color="#3498db" />
+                    </TouchableOpacity>
+                    {/* Delete button can be added here if needed */}
+                  </View>
+                  <FlatList
+                    data={onlineClinics}
+                    keyExtractor={(item, index) =>
+                      item?.dayOfWeek + index.toString()
+                    } // Using dayOfWeek and index for unique key
+                    renderItem={({item}) => {
+                      return (
+                        <View style={styles.dayContainer}>
+                          <Text style={styles.dayText}>{item?.dayOfWeek}</Text>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              flexWrap: 'wrap',
+                              justifyContent: 'space-between',
+                            }}>
+                            {item?.slots?.length > 0 ? (
+                              item?.slots?.map((slot, idx) => (
+                                <Text
+                                  key={idx.toString()}
+                                  style={styles.slotText}>
+                                  {slot?.startTime} → {slot?.endTime}
+                                </Text>
+                              ))
+                            ) : (
+                              <Text style={styles.noSlotText}>-</Text>
+                            )}
+                          </View>
+                        </View>
+                      );
+                    }}
+                    ListEmptyComponent={() => (
+                      <Text style={styles.emptyListText}>
+                        No Online Slots Found.
+                      </Text>
+                    )}
+                  />
+                </View>
+              </>
+            )}
+          </>
         )}
       </View>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Colors.WHITE,
-  },
-  container: {
-    flex: 1,
-  },
-  // Custom Tab Bar Styles
-  tabBar: {
-    flexDirection: 'row',
-    height: 50,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.GRAY_LIGHT, // Use a light gray
-  },
-  tabItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabText: {
-    fontSize: 14,
-    fontFamily: Fonts.PoppinsMedium,
-    color: Colors.GRAY,
-  },
-  activeTabText: {
-    color: Colors.APPCOLOR,
-  },
-  activeIndicator: {
-    height: 2,
-    width: '100%',
-    backgroundColor: Colors.APPCOLOR,
-    position: 'absolute',
-    bottom: 0,
-  },
-  // List Styles
-  listContainer: {
-    flex: 1,
-    backgroundColor: Colors.WHITE,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-  },
-  headerTitle: {
-    fontSize: 20,
-    color: Colors.BLACK,
-    fontFamily: Fonts.PoppinsMedium,
-  },
-  addButton: {
-    flexDirection: 'row',
-    backgroundColor: Colors.APPCOLOR,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 100,
-    alignItems: 'center',
-  },
-  addButtonText: {
-    color: Colors.WHITE,
-    marginLeft: 5,
-  },
-  card: {
-    backgroundColor: Colors.WHITE,
-    borderRadius: 10,
-    padding: 15,
-    marginHorizontal: 20,
-    marginBottom: 20,
-    shadowColor: Colors.BLACK,
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: 0.5,
-    borderBottomColor: Colors.GRAY,
-    paddingBottom: 10,
-  },
-  clinicName: {
-    fontSize: 16,
-    color: Colors.BLACK,
-    flex: 1,
-    fontFamily: Fonts.PoppinsMedium,
-    marginRight: 4,
-  },
-  icons: {
-    flexDirection: 'row',
-  },
-  slotsContainer: {
-    paddingTop: 10,
-  },
-  dayContainer: {
-    marginBottom: 5,
-  },
-  dayText: {
-    fontSize: 14,
-    color: Colors.BLACK,
-    fontFamily: Fonts.PoppinsMedium,
-  },
-  slotText: {
-    fontSize: 14,
-    color: Colors.BLACK,
-    fontFamily: Fonts.PoppinsRegular,
-  },
-  noSlotText: {
-    fontSize: 14,
-    color: Colors.BLACK,
-    fontFamily: Fonts.PoppinsRegular,
-  },
-});
 
 export default SlotsScreen;

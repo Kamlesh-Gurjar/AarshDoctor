@@ -36,7 +36,7 @@ const App = () => {
         <PersistGate loading={null} persistor={persistor}>
           <GestureHandlerRootView style={{flex: 1}}>
             {isConnected ? <AppNavavigation /> : <CheckInternet />}
-             <Toast />
+            <Toast />
           </GestureHandlerRootView>
         </PersistGate>
       </Provider>
@@ -45,12 +45,6 @@ const App = () => {
 };
 
 export default App;
-
-
-
-
-
-
 
 // import React, { useEffect, useState } from 'react';
 // import {

@@ -62,9 +62,9 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 5,
-    borderWidth: 0.5,
-    borderColor: Colors.APPCOLOR,
-    borderRadius: 5,
+    // borderWidth: 0.5,
+    // borderColor: Colors.APPCOLOR,
+    // borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     tintColor: Colors.APPCOLOR,
   },
   title: {
-    fontSize: 16,
+    fontSize: 18,
     color: Colors.BLACK,
     marginLeft: 15,
     fontFamily: Fonts.PoppinsMedium,

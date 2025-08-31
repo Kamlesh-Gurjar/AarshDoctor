@@ -1,14 +1,39 @@
 import {AppConstant} from './AppConstant';
 
 export const ApiRoutes = {
-  login: AppConstant.BASEURL + '/api/auth/login',
-  forgotPassword: AppConstant.BASEURL + '/api/auth/forget-password',
-  varifyForgetOtp: AppConstant.BASEURL + '/api/auth/verify-forget-otp',
+  login: AppConstant.BASEURL + '/api/auth/login', //complete
+  forgotPassword: AppConstant.BASEURL + '/api/auth/forget-password', //complete
+  varifyForgetOtp: AppConstant.BASEURL + '/api/auth/verify-forget-otp', //complete
   createForgetPassword:
-    AppConstant.BASEURL + '/api/auth/create-forget-password',
-  getDoctorDetails: AppConstant.BASEURL + '/api/doctor/get-doctor-detail',
+    AppConstant.BASEURL + '/api/auth/create-forget-password', //complete
+  getDoctorDetails: AppConstant.BASEURL + '/api/doctor/get-doctor-detail', //complete
   getAllAppointments:
-    AppConstant.BASEURL + '/api/appointment/get-all-appointment',
+    AppConstant.BASEURL + '/api/appointment/get-all-appointment', //complete
+
+  getAllLatestAppointments:
+    AppConstant.BASEURL + '/api/appointment/get-all-latest-appointment',
   getAppointmentDetail:
     AppConstant.BASEURL + 'api/appointment/get-appointment-detail',
+  getAllOfflineSlotes:
+    AppConstant.BASEURL + '/api/doctor/get-all-doctor-clinic-slot', //complete
+  getAllOnlineSlotes:
+    AppConstant.BASEURL + '/api/doctor/get-doctor-online-slot',
+
+  addDoctorBankDetail:
+    AppConstant.BASEURL + '/api/doctor/add-doctor-Bank-detail', //complete
+  getAllDoctorMonthsSlot:
+    AppConstant.BASEURL + '/api/doctor/get-doctor-months-slot', //complete
+  getAllDoctorOnlineMonthSlot:
+    AppConstant.BASEURL + '/api/doctor/get-doctor-online-months-slot', //complete
+
+  getLabsName: AppConstant.BASEURL + '/api/lab/get-lab-names',
+  getAppointmentDetails:
+    AppConstant.BASEURL + '/api/appointment/get-appointment-detail',
+  rescheduleAppointment:
+    AppConstant.BASEURL + '/api/doctor/reschedule-appointment',
+
+  addDoctorClinicSlot:
+    AppConstant.BASEURL + '/api/doctor/add-doctor-clinic-slot',
+
+  getDoctorAllClinic: AppConstant.BASEURL + '/api/doctor/get-doctor-all-clinic',
 };

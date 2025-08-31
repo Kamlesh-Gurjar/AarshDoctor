@@ -18,8 +18,14 @@ import Fonts from '../../theme/Fonts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ApiRequest from '../../network/ApiRequest';
 import {decryptData} from '../../utils/encryptionUtils';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import imageindex from '../../assets/images/imageindex';
+import {ApiRoutes} from '../../utils/ApiRoutes';
+import {
+  setDoctorDetails,
+  updateDoctorDetails,
+  clearDoctorDetails,
+} from '../../redux/redux_slice/DoctorDetailsSlice';
 
 // This is a dummy component for Tag input.
 // You should install a library like 'react-native-tags-input' for full functionality.
@@ -65,25 +71,32 @@ const TagInput = ({label, tags, onTagsChange}) => {
 };
 
 const UpdateProfileScreen = () => {
+  // const doctorDetails = useSelector((state) => state.doctorDetails);
+
+  // console.log("-----doctorDetails--",doctorDetails)
+
+  const dispatch = useDispatch();
   const getDoctorDetails = async () => {
     const token = await AsyncStorage.getItem('userToken');
     try {
       setIsLoading(true);
 
       const response = await ApiRequest({
-        BASEURL:
-          'https://develop-api.aarshreprohealth.com/api/doctor/get-doctor-detail',
+        BASEURL: ApiRoutes.getDoctorDetails,
         method: 'POST',
         token: token,
       });
 
       const decrypted = decryptData(response?.data);
 
-      console.log('Decrypted getDoctorDetails Data--------:', decrypted?.data);
-
-      setDoctor(decrypted?.data);
-      setIsLoading(false);
-      if (response.status === 200 || response.status === 201) {
+      if (decrypted.code === 200 || decrypted.code === 201) {
+        console.log(
+          'Decrypted getDoctorDetails Data--------:',
+          decrypted?.data,
+        );
+        dispatch(setDoctorDetails(decrypted?.data));
+        setDoctor(decrypted?.data);
+        setIsLoading(false);
       } else {
         setIsLoading(false);
         console.error('Server error:', decrypted?.message);
@@ -159,28 +172,28 @@ const UpdateProfileScreen = () => {
           </View>
 
           {/* Email and Contact */}
-          <View style={styles.row}>
-            <View style={[styles.inputContainer, {flex: 1}]}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                value={userData?.email}
-                onChangeText={text => setDoctor({...doctor, email: text})}
-                keyboardType="email-address"
-                editable={false}
-              />
-            </View>
-            <View style={[styles.inputContainer, {flex: 1}]}>
-              <Text style={styles.label}>Contact</Text>
-              <TextInput
-                style={styles.input}
-                value={userData?.contact}
-                onChangeText={text => setDoctor({...doctor, contact: text})}
-                keyboardType="phone-pad"
-                editable={false}
-              />
-            </View>
+          {/* <View style={styles.row}> */}
+          <View style={[styles.inputContainer, {flex: 1}]}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              value={userData?.email}
+              onChangeText={text => setDoctor({...doctor, email: text})}
+              keyboardType="email-address"
+              editable={false}
+            />
           </View>
+          <View style={[styles.inputContainer, {flex: 1}]}>
+            <Text style={styles.label}>Contact</Text>
+            <TextInput
+              style={styles.input}
+              value={userData?.contact}
+              onChangeText={text => setDoctor({...doctor, contact: text})}
+              keyboardType="phone-pad"
+              editable={false}
+            />
+          </View>
+          {/* </View> */}
 
           {/* Date of Birth and Gender */}
           <View style={styles.row}>
@@ -340,7 +353,7 @@ const UpdateProfileScreen = () => {
           onPress={() => console.log('Updated Data:', doctor)}>
           <Text style={styles.updateButtonText}>Update</Text>
         </TouchableOpacity> */}
-          <ButtonCompt title={"Update"} />
+          <ButtonCompt title={'Update'} />
         </ScrollView>
       )}
     </View>
@@ -432,7 +445,7 @@ const styles = StyleSheet.create({
   },
   tag: {
     flexDirection: 'row',
-    backgroundColor:  "#eee",
+    backgroundColor: '#eee',
     borderRadius: 15,
     paddingVertical: 5,
     paddingHorizontal: 10,

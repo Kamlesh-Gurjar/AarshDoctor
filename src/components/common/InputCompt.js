@@ -124,6 +124,7 @@ const InputCompt = ({
   placeholder,
   style,
   maxLength,
+  editable,
   ...rest
 }) => {
   const [secure, setSecure] = useState(isPassword);
@@ -132,7 +133,14 @@ const InputCompt = ({
     <View style={[styles.container, style]}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
 
-      <View style={styles.inputWrapper}>
+      <View
+        style={[
+          styles.inputWrapper,
+          {
+            borderColor: editable == false ? Colors.GRAY : null,
+            borderWidth: editable == false ? 0.3 : 0.5,
+          },
+        ]}>
         {/* Left Side Image */}
         {leftImage && (
           <Image
@@ -151,6 +159,7 @@ const InputCompt = ({
           maxLength={maxLength}
           placeholderTextColor={Colors.GRAY}
           {...rest}
+          editable={editable}
         />
 
         {/* Right Side Image */}

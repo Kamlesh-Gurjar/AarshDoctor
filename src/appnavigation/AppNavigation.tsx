@@ -2,7 +2,13 @@ import {View, Text} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {NavigationContainer} from '@react-navigation/native';
-import {AddSlotsScreen, EditSlotsScreen, ForgotPassword, ResetPasswordScreen, VerifyOtpScreen} from '../screens';
+import {
+  AddSlotsScreen,
+  EditSlotsScreen,
+  ForgotPassword,
+  ResetPasswordScreen,
+  VerifyOtpScreen,
+} from '../screens';
 import {SplashScreen} from '../screens';
 import {Login} from '../screens';
 import Appointments from '../screens/appointments/Appointments';
@@ -12,6 +18,9 @@ import Tabs from './Tabs';
 import BankDetailsScreen from '../screens/bankdetails/BankDetailsScreen';
 import CertificationsScreen from '../screens/certifications/CertificationsScreen';
 import ManageSubscriptionScreen from '../screens/managesubscription/ManageSubscriptionScreen';
+import AddPrescriptionScreen from '../screens/appointments/AddPrescriptionScreen';
+import RescheduleAppointmentScreen from '../screens/appointments/RescheduleAppointmentScreen';
+import MeetingScreen from '../screens/meetingscreen/MeetingScreen';
 
 const AppNavigation = () => {
   // const [isFirstLaunch, setIsFirstLaunch] = useState(null);
@@ -49,7 +58,16 @@ const AppNavigation = () => {
           component={ManageSubscriptionScreen}
         />
 
-        <Stack.Screen name="Appointments" component={Appointments} />
+        {/* <Stack.Screen name="Appointments" component={Appointments} /> */}
+        <Stack.Screen
+          name="AddPrescription"
+          component={AddPrescriptionScreen}
+        />
+        <Stack.Screen
+          name="RescheduleAppointment"
+          component={RescheduleAppointmentScreen}
+        />
+
         <Stack.Screen name="ProfileDetails" component={ProfileDetailsScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
         <Stack.Screen name="VerifyOtp" component={VerifyOtpScreen} />
@@ -60,13 +78,9 @@ const AppNavigation = () => {
           component={AppointmentDetailsScreen}
         />
 
-        <Stack.Screen
-          name="EditSlots"
-          component={EditSlotsScreen}
-        /><Stack.Screen
-          name="AddSlots"
-          component={AddSlotsScreen}
-        />
+        <Stack.Screen name="EditSlots" component={EditSlotsScreen} />
+        <Stack.Screen name="AddSlots" component={AddSlotsScreen} />
+        <Stack.Screen name="Meeting" component={MeetingScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -4,7 +4,7 @@ import {View, Text, TextInput, StyleSheet} from 'react-native';
 import Fonts from '../../theme/Fonts';
 import {Colors} from '../../theme/Colors';
 
-const FormInput = ({label, formik, fieldName, ...props}) => {
+const FormInput = ({label, formik, fieldName, placeholder, ...props}) => {
   const isError = formik.touched[fieldName] && formik.errors[fieldName];
 
   return (
@@ -16,6 +16,7 @@ const FormInput = ({label, formik, fieldName, ...props}) => {
         onBlur={formik.handleBlur(fieldName)}
         value={formik.values[fieldName]}
         placeholderTextColor={Colors.GRAY}
+        placeholder={placeholder}
         {...props}
       />
       {isError && (
@@ -31,27 +32,29 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontFamily: Fonts.PoppinsRegular,
+    fontFamily: Fonts.PoppinsMedium,
     color: Colors.BLACK,
     marginBottom: 8,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
+    borderWidth: 0.5,
+    borderColor: Colors.GRAY,
     borderRadius: 8,
     paddingHorizontal: 15,
     paddingVertical: 12,
     fontSize: 16,
     fontFamily: Fonts.PoppinsRegular,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.WHITE,
+    color: Colors.BLACK,
   },
   errorBorder: {
-    borderColor: 'red',
+    borderColor: Colors.RED,
   },
   errorText: {
-    color: 'red',
+    color: Colors.RED,
     fontSize: 12,
     marginTop: 5,
+    fontFamily: Fonts.PoppinsRegular,
   },
 });
 
