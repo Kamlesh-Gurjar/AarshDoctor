@@ -17,7 +17,7 @@ const SlotsController = () => {
   const [doctorId, setDoctorId] = useState(null);
   const doctorDetails = useSelector(state => state.doctorDetails);
 
-  console.log('-----------doctorDetails--------', doctorDetails);
+  // console.log('-----------doctorDetails--------', doctorDetails);
 
   const getAllOfflineSlots = async () => {
     const token = await AsyncStorage.getItem('userToken');

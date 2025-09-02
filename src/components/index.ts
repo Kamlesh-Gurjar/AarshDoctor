@@ -7,6 +7,7 @@ import TimePickerModal from './common/TimePickerModal';
 import CustomPicker from './common/CustomPicker';
 import ClinicCard from './cards/ClinicCard';
 import FilterModal from './common/FilterModal';
+import ClinicDropdown from './common/ClinicDropdown';
 
 export {
   InputCompt,
@@ -17,6 +18,7 @@ export {
   TimePickerModal,
   CustomPicker,
   ClinicCard,
-  FilterModal
+  FilterModal,
+  ClinicDropdown
   
 };

@@ -191,7 +191,7 @@ const BankDetailsScreen = () => {
 
   const BankDetails = doctorDetails?.bankDetails;
 
-  console.log('-----------doctorDetails--------', doctorDetails);
+  // console.log('-----------doctorDetails--------', doctorDetails);
 
   const [isLoading, setIsLoading] = useState(false);
 

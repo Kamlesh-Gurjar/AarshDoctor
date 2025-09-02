@@ -11,13 +11,13 @@ export const ApiRoutes = {
     AppConstant.BASEURL + '/api/appointment/get-all-appointment', //complete
 
   getAllLatestAppointments:
-    AppConstant.BASEURL + '/api/appointment/get-all-latest-appointment',
+    AppConstant.BASEURL + '/api/appointment/get-all-latest-appointment', //complete
   getAppointmentDetail:
-    AppConstant.BASEURL + 'api/appointment/get-appointment-detail',
+    AppConstant.BASEURL + '/api/appointment/get-appointment-detail',
   getAllOfflineSlotes:
     AppConstant.BASEURL + '/api/doctor/get-all-doctor-clinic-slot', //complete
   getAllOnlineSlotes:
-    AppConstant.BASEURL + '/api/doctor/get-doctor-online-slot',
+    AppConstant.BASEURL + '/api/doctor/get-doctor-online-slot', //complete
 
   addDoctorBankDetail:
     AppConstant.BASEURL + '/api/doctor/add-doctor-Bank-detail', //complete
@@ -26,9 +26,8 @@ export const ApiRoutes = {
   getAllDoctorOnlineMonthSlot:
     AppConstant.BASEURL + '/api/doctor/get-doctor-online-months-slot', //complete
 
-  getLabsName: AppConstant.BASEURL + '/api/lab/get-lab-names',
-  getAppointmentDetails:
-    AppConstant.BASEURL + '/api/appointment/get-appointment-detail',
+  getLabsName: AppConstant.BASEURL + '/api/lab/get-lab-names', //complete
+
   rescheduleAppointment:
     AppConstant.BASEURL + '/api/doctor/reschedule-appointment',
 
@@ -38,5 +37,7 @@ export const ApiRoutes = {
   getDoctorAllClinic: AppConstant.BASEURL + '/api/doctor/get-doctor-all-clinic',
 
   getPurchasedSubscriptionPlan:
-    AppConstant.BASEURL + '/api/package/get-purchased-subscription-plan',
+    AppConstant.BASEURL + '/api/package/get-purchased-subscription-plan', //complete
+
+  addBasicProfile: AppConstant.BASEURL + '/api/doctor/add-doctor-basic-detail',
 };

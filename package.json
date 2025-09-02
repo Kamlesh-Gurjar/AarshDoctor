@@ -39,6 +39,7 @@
     "react-native-screens": "^4.13.1",
     "react-native-tag-input": "^0.0.21",
     "react-native-toast-message": "^2.3.0",
+    "react-native-webview": "^13.13.5",
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
     "yup": "^1.7.0"

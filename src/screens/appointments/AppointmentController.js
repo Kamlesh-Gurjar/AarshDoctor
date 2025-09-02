@@ -10,7 +10,7 @@ const AppointmentController = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [originalData, setOriginalData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [allLatestAppointment, setAllLatestAppointment] = useState([]);
   const [allLatestAppointmentLoading, setAllLatestAppointmentLoading] =
     useState(false);
@@ -58,10 +58,10 @@ const AppointmentController = () => {
       });
 
       const decrypted = decryptData(response.data);
-      console.log(
-        '----getAllLatestAppointments----------------',
-        decrypted?.data,
-      );
+      // console.log(
+      //   '----getAllLatestAppointments----------------',
+      //   decrypted?.data,
+      // );
       if (response.status === 200 || response.status === 201) {
         setAllLatestAppointment(decrypted?.data);
       } else {

@@ -8,10 +8,10 @@ import {useFocusEffect} from '@react-navigation/native';
 const CalenderController = () => {
   const [offlineCalenderdata, setofflineCalenderdata] = useState([]);
   const [isLoadingofflineCalender, setIsLoadingofflineCalender] =
-    useState(false);
+    useState(true);
   const [OnlineCalenderdata, setOnlineCalenderdata] = useState([]);
   const [OnlineCalenderdataLoading, setOnlineCalenderdataLoading] =
-    useState(false);
+    useState(true);
 
   const getAllOfflineCalender = async (id, doctorClinicIds) => {
     console.log('-----------payloaddata-------------', id, doctorClinicIds);

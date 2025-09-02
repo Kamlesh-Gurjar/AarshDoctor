@@ -329,7 +329,11 @@ import SlotsController from './SlotesController'; // Adjust the path as necessar
 
 const renderItem = ({item}) => {
   return (
-    <ClinicCard clinicName={item?.clinicName} slots={item?.slot?.slotsByDay} />
+    <ClinicCard
+      clinicName={item?.clinicName}
+      slots={item?.slot?.slotsByDay}
+      item={item}
+    />
   );
 };
 
@@ -383,7 +387,7 @@ const SlotsScreen = () => {
 
   // Handler for Edit Slots button press
   const handleEditSlotsPress = () => {
-    navigation.navigate('EditSlots');
+    navigation.navigate('EditSlots', {item: {}});
   };
 
   return (

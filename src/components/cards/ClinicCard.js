@@ -6,7 +6,7 @@ import {Colors} from '../../theme/Colors';
 import Fonts from '../../theme/Fonts';
 // import styles from '../../screens/bottomtabs/slotes/styles.slotes';
 
-const ClinicCard = ({clinicName, slots}) => {
+const ClinicCard = ({clinicName, slots,item}) => {
   const navigation = useNavigation();
 
   return (
@@ -14,7 +14,7 @@ const ClinicCard = ({clinicName, slots}) => {
       <View style={styles.cardHeader}>
         <Text style={styles.clinicName}>{clinicName}</Text>
         <View style={styles.icons}>
-          <TouchableOpacity onPress={() => navigation.navigate('EditSlots')}>
+          <TouchableOpacity onPress={() => navigation.navigate('EditSlots',{item:item})}>
             <MaterialIcons name="edit" size={24} color="#3498db" />
           </TouchableOpacity>
           <TouchableOpacity style={{marginLeft: 15}}>

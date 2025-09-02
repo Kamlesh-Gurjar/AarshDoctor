@@ -26,7 +26,11 @@ import {
   updateDoctorDetails,
   clearDoctorDetails,
 } from '../../redux/redux_slice/DoctorDetailsSlice';
-import {formatDate} from '../../utils/HelperFuntions';
+import {
+  formatDate,
+  showErrorToast,
+  showSuccessToast,
+} from '../../utils/HelperFuntions';
 
 // This is a dummy component for Tag input.
 // You should install a library like 'react-native-tags-input' for full functionality.
@@ -121,6 +125,7 @@ const UpdateProfileScreen = () => {
 
   // console.log('---------------', doctor);
   const [isLoading, setIsLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -140,6 +145,58 @@ const UpdateProfileScreen = () => {
       year: 'numeric',
     })
     .replace(/\//g, '-');
+
+  // ✅ Submit Function
+  const handleBasicDetailsSubmit = async values => {
+    const token = await AsyncStorage.getItem('userToken');
+
+    const req = {
+      dateOfBirth,
+      gender,
+      profilePic,
+      specialization,
+      experience,
+      registrationNumber,
+      registrationCouncil,
+      registrationYear,
+      degree,
+      collegeName,
+      passOutYear,
+      description,
+      language,
+      fees,
+      email,
+      contact,
+      name,
+      salutation,
+    };
+
+    try {
+      setSubmitLoading(true);
+
+      const response = await ApiRequest({
+        BASEURL: ApiRoutes.addBasicProfile,
+        method: 'POST',
+        req: req,
+        token: token,
+      });
+
+      const resData = await decryptData(response.data);
+
+      console.log('------------resData-------', resData);
+
+      if (resData?.code === 200 || resData?.code === 201) {
+        showSuccessToast('Success', resData?.message);
+      } else {
+        showErrorToast('Failed', resData?.message || 'Something went wrong');
+      }
+    } catch (error) {
+      console.error('Bank Details Update Error:', error?.message || error);
+      showErrorToast('Failed', error?.message || 'Error updating bank details');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
 
   return (
     <View style={{flex: 1, backgroundColor: Colors.WHITE}}>
@@ -359,7 +416,11 @@ const UpdateProfileScreen = () => {
           onPress={() => console.log('Updated Data:', doctor)}>
           <Text style={styles.updateButtonText}>Update</Text>
         </TouchableOpacity> */}
-          <ButtonCompt title={'Update'} />
+          <ButtonCompt
+            title={'Update'}
+            isLoading={submitLoading}
+            onPress={handleBasicDetailsSubmit}
+          />
         </ScrollView>
       )}
     </View>

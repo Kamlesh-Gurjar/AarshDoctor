@@ -242,10 +242,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Pressable,
+  Modal,
 } from 'react-native';
 import Icon from '@react-native-vector-icons/material-icons'; // Assuming you have this icon library
 import {useNavigation} from '@react-navigation/native';
 import {Colors} from '../../theme/Colors';
+import LabModal from '../common/LabModal';
 
 const statusColors = {
   Confirmed: '#4CAF50', // Green
@@ -306,6 +308,12 @@ const formatDateIndian = dateString => {
 const AppointmentCard = ({item, setActiveCardId, activeCardId}) => {
   const navigation = useNavigation();
   const isCardActive = activeCardId === item._id;
+  const [isVisible, setIsVisible] = useState(false);
+
+  const handleSelectLab = lab => {
+    console.log('Selected Lab:', lab);
+    setIsVisible(!isVisible); // close after selecting
+  };
 
   return (
     <View style={styles.card}>
@@ -424,7 +432,25 @@ const AppointmentCard = ({item, setActiveCardId, activeCardId}) => {
             <Icon name="event-note" size={16} color={Colors.TEXT_DARK} />
             <Text style={styles.popupText}>Reschedule Appointment</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.popupOption}
+            // onPress={() => {
+            //   setActiveCardId(null); // Close popup
+            //   navigation.navigate('RescheduleAppointment', {item: item});
+            // }}
+            onPress={() => setIsVisible(!isVisible)}>
+            <Icon name="send" size={16} color={Colors.TEXT_DARK} />
+            <Text style={styles.popupText}>Refer to Lab</Text>
+          </TouchableOpacity>
         </View>
+      )}
+
+      {isVisible && (
+        <LabModal
+          isVisible={isVisible}
+          onClose={() => setIsVisible(!isVisible)}
+          onSelect={handleSelectLab}
+        />
       )}
     </View>
   );
@@ -567,18 +593,18 @@ const styles = StyleSheet.create({
     zIndex: 10, // Ensure popup is above other elements
     minWidth: 180,
   },
+  // popupOption: {
+  //   flexDirection: 'row',
+  //   alignItems: 'center',
+  //   paddingVertical: 12,
+  //   paddingHorizontal: 15,
+  //   borderBottomWidth: 0.5,
+  //   borderBottomColor: Colors.BORDER,
+  // },
   popupOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    borderBottomWidth: 0.5,
-    borderBottomColor: Colors.BORDER,
-  },
-  popupOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: 15,
   },
   popupText: {
