@@ -61,7 +61,9 @@ const TagInput = ({label, tags, onTagsChange}) => {
       <View style={styles.tagInputContainer}>
         {tags?.map((tag, index) => (
           <View key={index} style={styles.tag}>
-            <Text style={styles.tagText}>{tag?.replaceAll('&amp', '')}</Text>
+            <Text style={styles.tagText}>
+              {tag?.replaceAll('&amp', '').replaceAll(';', '')}
+            </Text>
             <TouchableOpacity onPress={() => removeTag(index)}>
               <Image style={styles.tagDelete} source={imageindex.cancel} />
             </TouchableOpacity>

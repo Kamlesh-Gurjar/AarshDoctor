@@ -129,7 +129,7 @@ const CalendarScreen = () => {
   } = CalenderController();
 
   // console.log('======OnlineCalenderdata=====', OnlineCalenderdata);
-  console.log('======offlineCalenderdata=====', offlineCalenderdata);
+  // console.log('======offlineCalenderdata=====', offlineCalenderdata);
 
   useEffect(() => {
     // Process data for marked dates and initial slot display

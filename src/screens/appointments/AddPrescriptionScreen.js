@@ -1,522 +1,3 @@
-// import React, {useState} from 'react';
-// import {
-//   SafeAreaView,
-//   ScrollView,
-//   View,
-//   Text,
-//   TextInput,
-//   TouchableOpacity,
-//   StyleSheet,
-//   Alert,
-//   FlatList,
-// } from 'react-native';
-// // import RNPickerSelect from 'react-native-picker-select';
-// // import Icon from 'react-native-vector-icons/MaterialIcons';
-// import Icon from '@react-native-vector-icons/material-icons';
-// import {Colors} from '../../theme/Colors';
-// import Fonts from '../../theme/Fonts';
-// import {ButtonCompt, HeaderCompt, InputCompt} from '../../components';
-// import {Picker} from '@react-native-picker/picker';
-
-// // --- Reusable Components (can be in separate files) ---
-
-// const RNPickerSelect = ({data, onSelect, onToggle}) => (
-//   <View style={styles.dropdownContainer}>
-//     <FlatList
-//       data={data}
-//       keyExtractor={item => item}
-//       renderItem={({item}) => (
-//         <TouchableOpacity
-//           style={styles.dropdownItem}
-//           onPress={() => {
-//             onSelect(item?.value);
-//             onToggle(false);
-//           }}>
-//           <Text style={styles.dropdownItemText}>{item?.value}</Text>
-//         </TouchableOpacity>
-//       )}
-//     />
-//   </View>
-// );
-
-// // Component for the "Tests Recommended" tag input
-// const TagInput = ({tags, onTagsChange}) => {
-//   const [text, setText] = useState('');
-
-//   const handleAddTag = () => {
-//     if (text && !tags.includes(text)) {
-//       onTagsChange([...tags, text]);
-//       setText('');
-//     }
-//   };
-
-//   const handleRemoveTag = index => {
-//     onTagsChange(tags.filter((_, i) => i !== index));
-//   };
-
-//   return (
-//     <>
-//       <View style={styles.tagInputContainer}>
-//         <TextInput
-//           style={styles.input}
-//           placeholder="Add test"
-//           value={text}
-//           onChangeText={setText}
-//           onSubmitEditing={handleAddTag} // Add tag on pressing enter/return
-//         />
-//         <TouchableOpacity style={styles.addButtonSmall} onPress={handleAddTag}>
-//           <Text style={styles.addButtonText}>Add</Text>
-//         </TouchableOpacity>
-//       </View>
-//       <View style={styles.tagsContainer}>
-//         {tags.map((tag, index) => (
-//           <View key={index} style={styles.tag}>
-//             <Text style={styles.tagText}>{tag}</Text>
-//             <TouchableOpacity onPress={() => handleRemoveTag(index)}>
-//               <Icon name="close" size={16} color="#3498db" />
-//             </TouchableOpacity>
-//           </View>
-//         ))}
-//       </View>
-//     </>
-//   );
-// };
-
-// // Component for a single medicine entry
-// const MedicineInput = ({item, onUpdate, onDelete}) => {
-//   const {name, schedule, timings} = item;
-
-//   const handleTimingChange = time => {
-//     onUpdate({
-//       ...item,
-//       timings: {
-//         ...timings,
-//         [time]: !timings[time],
-//       },
-//     });
-//   };
-
-//   const handleScheduleChange = newSchedule => {
-//     onUpdate({...item, schedule: newSchedule});
-//   };
-
-//   return (
-//     <View style={styles.medicineCard}>
-//       <View style={styles.medicineHeader}>
-//         <TextInput
-//           placeholder="Medicine Name"
-//           style={[styles.input, {flex: 1}]}
-//           value={name}
-//           onChangeText={text => onUpdate({...item, name: text})}
-//         />
-//         <TouchableOpacity onPress={onDelete} style={{marginLeft: 10}}>
-//           <Icon name="delete-outline" size={24} color="#e74c3c" />
-//         </TouchableOpacity>
-//       </View>
-
-//       <View style={styles.scheduleContainer}>
-//         <Text style={styles.label}>Schedule</Text>
-//         <TouchableOpacity
-//           style={styles.radioContainer}
-//           onPress={() => handleScheduleChange('Before Food')}>
-//           <View style={styles.radio}>
-//             {schedule === 'Before Food' && <View style={styles.radioFill} />}
-//           </View>
-//           <Text style={styles.radioLabel}>Before Food</Text>
-//         </TouchableOpacity>
-//         <TouchableOpacity
-//           style={styles.radioContainer}
-//           onPress={() => handleScheduleChange('After Food')}>
-//           <View style={styles.radio}>
-//             {schedule === 'After Food' && <View style={styles.radioFill} />}
-//           </View>
-//           <Text style={styles.radioLabel}>After Food</Text>
-//         </TouchableOpacity>
-//       </View>
-
-//       <View style={styles.timingsContainer}>
-//         {Object.keys(timings).map(time => (
-//           <TouchableOpacity
-//             key={time}
-//             style={styles.checkboxContainer}
-//             onPress={() => handleTimingChange(time)}>
-//             <View
-//               style={[
-//                 styles.checkbox,
-//                 timings[time] && styles.checkboxChecked,
-//               ]}>
-//               {timings[time] && <Icon name="check" size={14} color="#fff" />}
-//             </View>
-//             <Text style={styles.checkboxLabel}>{time}</Text>
-//           </TouchableOpacity>
-//         ))}
-//       </View>
-//     </View>
-//   );
-// };
-
-// // --- Main Screen ---
-// const AddPrescriptionScreen = () => {
-//   // State for each form field
-//   const [salutation, setSalutation] = useState('Mr.');
-//   const [fullName, setFullName] = useState('rajveer');
-//   const [age, setAge] = useState('');
-//   const [contact] = useState('7581819323'); // Assuming it's read-only
-//   const [symptoms, setSymptoms] = useState('');
-//   const [diseaseName, setDiseaseName] = useState('');
-//   const [recommendedTests, setRecommendedTests] = useState(['Blood']);
-//   const [recommendedLab, setRecommendedLab] = useState(null);
-//   const [notes, setNotes] = useState('');
-
-//   // State for the dynamic list of medicines
-//   const [medicines, setMedicines] = useState([
-//     {
-//       id: 1,
-//       name: '',
-//       schedule: 'After Food', // 'Before Food' or 'After Food'
-//       timings: {
-//         Morning: true,
-//         Afternoon: false,
-//         Evening: false,
-//         Night: false,
-//       },
-//     },
-//   ]);
-
-//   const handleAddMedicine = () => {
-//     const newMedicine = {
-//       id: medicines.length + 1, // Use a better unique id in a real app
-//       name: '',
-//       schedule: 'Before Food',
-//       timings: {Morning: false, Afternoon: false, Evening: false, Night: false},
-//     };
-//     setMedicines([...medicines, newMedicine]);
-//   };
-
-//   const handleUpdateMedicine = (id, updatedMedicine) => {
-//     setMedicines(medicines.map(med => (med.id === id ? updatedMedicine : med)));
-//   };
-
-//   const handleDeleteMedicine = id => {
-//     // Prevent deleting the last medicine row
-//     if (medicines.length === 1) {
-//       Alert.alert('Cannot Delete', 'At least one medicine must be prescribed.');
-//       return;
-//     }
-//     setMedicines(medicines.filter(med => med.id !== id));
-//   };
-
-//   const handleSubmit = () => {
-//     // Consolidate all form data
-//     const prescriptionData = {
-//       patientInfo: {salutation, fullName, age, contact},
-//       diagnosis: {symptoms, diseaseName},
-//       recommendations: {tests: recommendedTests, lab: recommendedLab},
-//       medicines,
-//       notes,
-//     };
-//     console.log(JSON.stringify(prescriptionData, null, 2));
-//     Alert.alert('Prescription Added', 'Check the console for the form data.');
-//   };
-
-//   return (
-//     <SafeAreaView style={styles.flexContainer}>
-//       <HeaderCompt title={'Add Prescription'} />
-//       <ScrollView contentContainerStyle={styles.container}>
-//         {/* --- Patient Info Section --- */}
-//         <View style={styles.section}>
-//           <View style={styles.row}>
-//             <View style={[styles.inputGroup, {flex: 0.4}]}>
-//               <Text style={styles.label}>Salutation</Text>
-//               <RNPickerSelect
-//                 onValueChange={value => setSalutation(value)}
-//                 data={[
-//                   {label: 'Mr.', value: 'Mr.'},
-//                   {label: 'Mrs.', value: 'Mrs.'},
-//                   {label: 'Miss', value: 'Miss'},
-//                   {label: 'Dr.', value: 'Dr.'},
-//                 ]}
-//                 style={pickerSelectStyles}
-//                 value={salutation}
-//               />
-//             </View>
-//             <View style={[styles.inputGroup, {flex: 0.6}]}>
-//               <Text style={styles.label}>Full Name</Text>
-//               <TextInput
-//                 style={styles.input}
-//                 value={fullName}
-//                 onChangeText={setFullName}
-//               />
-//             </View>
-//           </View>
-
-//           <InputCompt label={'Contact'} value={contact} editable={false} />
-//           <InputCompt
-//             label={'Age'}
-//             placeholder="Enter age"
-//             value={age}
-//             onChangeText={setAge}
-//             keyboardType="numeric"
-//           />
-//         </View>
-
-//         {/* --- Diagnosis Section --- */}
-//         <View style={styles.section}>
-//           <InputCompt
-//             label={'Symptoms'}
-//             placeholder="Enter symptoms"
-//             value={symptoms}
-//             onChangeText={setSymptoms}
-//           />
-//           <InputCompt
-//             label={'Disease Name'}
-//             placeholder="Enter disease name"
-//             value={diseaseName}
-//             onChangeText={setDiseaseName}
-//           />
-//         </View>
-
-//         {/* --- Recommendations Section --- */}
-//         <View style={styles.section}>
-//           <View style={styles.inputGroupFull}>
-//             <Text style={styles.label}>Tests Recommended</Text>
-//             <TagInput
-//               tags={recommendedTests}
-//               onTagsChange={setRecommendedTests}
-//             />
-//           </View>
-//           <View style={styles.inputGroupFull}>
-//             <Text style={styles.label}>Recommended Labs</Text>
-//             <RNPickerSelect
-//               onValueChange={value => setRecommendedLab(value)}
-//               data={[
-//                 {label: 'City Lab', value: 'city_lab'},
-//                 {label: 'Health First Diagnostics', value: 'health_first'},
-//                 {label: 'Metro Labs', value: 'metro_labs'},
-//               ]}
-//               style={pickerSelectStyles}
-//               placeholder={{label: 'Select a lab...', value: null}}
-//               value={recommendedLab}
-//             />
-//           </View>
-//         </View>
-
-//         {/* --- Prescribed Medicines Section --- */}
-//         <View style={styles.section}>
-//           <Text style={styles.sectionTitle}>Prescribed Medicines</Text>
-//           {medicines.map(med => (
-//             <MedicineInput
-//               key={med.id}
-//               item={med}
-//               onUpdate={updatedMed => handleUpdateMedicine(med.id, updatedMed)}
-//               onDelete={() => handleDeleteMedicine(med.id)}
-//             />
-//           ))}
-//           <TouchableOpacity
-//             style={styles.addMoreButton}
-//             onPress={handleAddMedicine}>
-//             <Icon name="add" size={20} color="#007bff" />
-//             <Text style={styles.addMoreButtonText}>Add More Medicine</Text>
-//           </TouchableOpacity>
-//         </View>
-
-//         {/* --- Notes Section --- */}
-//         <View style={styles.section}>
-//           <Text style={styles.label}>Note</Text>
-//           <TextInput
-//             style={[styles.input, styles.notesInput]}
-//             placeholder="Enter notes..."
-//             placeholderTextColor={Colors.GRAY}
-//             value={notes}
-//             onChangeText={setNotes}
-//             multiline
-//           />
-//         </View>
-
-//         {/* --- Submit Button --- */}
-//         <ButtonCompt title={'Add'} onPress={handleSubmit} />
-//       </ScrollView>
-//     </SafeAreaView>
-//   );
-// };
-
-// // --- Styles ---
-// const styles = StyleSheet.create({
-//   flexContainer: {flex: 1, backgroundColor: Colors.WHITE},
-//   container: {padding: 16},
-
-//   section: {
-//     backgroundColor: Colors.WHITE,
-//     padding: 16,
-//     borderRadius: 8,
-//     marginBottom: 16,
-//     borderWidth: 1,
-//     borderColor: '#e9ecef',
-//   },
-//   sectionTitle: {
-//     fontSize: 18,
-//     fontWeight: '600',
-//     marginBottom: 12,
-//     color: '#495057',
-//   },
-//   row: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     marginBottom: 12,
-//   },
-//   inputGroup: {flex: 1, marginHorizontal: 4},
-//   inputGroupFull: {width: '100%', marginBottom: 12},
-//   label: {fontSize: 14, color: Colors.BLACK, marginBottom: 6},
-//   input: {
-//     borderWidth: 1,
-//     borderColor: '#ced4da',
-//     borderRadius: 4,
-//     paddingHorizontal: 12,
-//     paddingVertical: 10,
-//     fontSize: 16,
-//     backgroundColor: Colors.WHITE,
-//   },
-//   readOnly: {backgroundColor: '#e9ecef'},
-//   notesInput: {height: 100, textAlignVertical: 'top'},
-
-//   // Tag Input
-//   tagInputContainer: {flexDirection: 'row', alignItems: 'center'},
-//   addButtonSmall: {
-//     backgroundColor: '#28a745',
-//     paddingHorizontal: 16,
-//     paddingVertical: 10,
-//     borderRadius: 4,
-//     marginLeft: 8,
-//   },
-//   addButtonText: {color: Colors.WHITE, fontWeight: 'bold'},
-//   tagsContainer: {flexDirection: 'row', flexWrap: 'wrap', marginTop: 8},
-//   tag: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     backgroundColor: '#e7f3ff',
-//     borderRadius: 16,
-//     paddingVertical: 4,
-//     paddingHorizontal: 10,
-//     marginRight: 8,
-//     marginBottom: 8,
-//   },
-//   tagText: {color: '#3498db', marginRight: 6},
-
-//   // Medicine Card
-//   medicineCard: {
-//     padding: 12,
-//     borderWidth: 1,
-//     borderColor: '#dee2e6',
-//     borderRadius: 6,
-//     marginBottom: 12,
-//   },
-//   medicineHeader: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     marginBottom: 12,
-//   },
-//   scheduleContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     marginBottom: 12,
-//   },
-//   radioContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     marginRight: 20,
-//     marginLeft: 10,
-//   },
-//   radio: {
-//     width: 20,
-//     height: 20,
-//     borderRadius: 10,
-//     borderWidth: 2,
-//     borderColor: Colors.APPCOLOR,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   radioFill: {
-//     width: 10,
-//     height: 10,
-//     borderRadius: 5,
-//     backgroundColor: Colors.APPCOLOR,
-//   },
-//   radioLabel: {marginLeft: 6, fontSize: 16},
-
-//   timingsContainer: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-around',
-//     borderTopWidth: 1,
-//     borderTopColor: '#e9ecef',
-//     paddingTop: 12,
-//   },
-//   checkboxContainer: {alignItems: 'center'},
-//   checkbox: {
-//     width: 22,
-//     height: 22,
-//     borderWidth: 2,
-//     borderColor: Colors.APPCOLOR,
-//     borderRadius: 4,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     marginBottom: 4,
-//   },
-//   checkboxChecked: {backgroundColor: Colors.APPCOLOR},
-//   checkboxLabel: {textTransform: 'capitalize', color: '#495057'},
-
-//   // Buttons
-//   addMoreButton: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     padding: 10,
-//     borderRadius: 4,
-//     backgroundColor: '#e7f5ff',
-//   },
-//   addMoreButtonText: {color: '#007bff', fontWeight: 'bold', marginLeft: 8},
-// });
-
-// const pickerSelectStyles = StyleSheet.create({
-//   inputIOS: {
-//     fontSize: 16,
-//     paddingVertical: 12,
-//     paddingHorizontal: 10,
-//     borderWidth: 1,
-//     borderColor: '#ced4da',
-//     borderRadius: 4,
-//     color: 'black',
-//     paddingRight: 30, // to ensure the text is never behind the icon
-//   },
-//   inputAndroid: {
-//     fontSize: 16,
-//     paddingHorizontal: 10,
-//     paddingVertical: 8,
-//     borderWidth: 1,
-//     borderColor: '#ced4da',
-//     borderRadius: 4,
-//     color: 'black',
-//     paddingRight: 30, // to ensure the text is never behind the icon
-//   },
-//   // Dropdown styles
-//   dropdownContainer: {
-//     height: 150,
-//     borderWidth: 1,
-//     borderColor: '#ccc',
-//     borderRadius: 6,
-//     backgroundColor: Colors.WHITE,
-//   },
-//   dropdownItem: {padding: 12, borderBottomWidth: 1, borderBottomColor: '#eee'},
-//   dropdownItemText: {
-//     textAlign: 'center',
-//     color: Colors.BLACK,
-//     fontSize: 16,
-//     fontFamily: Fonts.PoppinsMedium,
-//   },
-// });
-
-// export default AddPrescriptionScreen;
-
 import React, {useState} from 'react';
 import {
   SafeAreaView,
@@ -619,75 +100,144 @@ const TagInput = ({tags, onTagsChange}) => {
   );
 };
 
-// Component for a single medicine entry
-const MedicineInput = ({item, onUpdate, onDelete}) => {
-  const {name, schedule, timings} = item;
+const MedicineInput = ({item, onUpdate, onDelete, index}) => {
+  const {medicineName, type, subType, duration, schedule} = item;
 
-  const handleTimingChange = time => {
+  // toggle nested schedule
+  const toggleSchedule = (time, foodType) => {
     onUpdate({
       ...item,
-      timings: {
-        ...timings,
-        [time]: !timings[time],
+      schedule: {
+        ...schedule,
+        [time]: {
+          ...schedule[time],
+          [foodType]: !schedule[time][foodType],
+        },
       },
     });
   };
 
-  const handleScheduleChange = newSchedule => {
-    onUpdate({...item, schedule: newSchedule});
-  };
-
   return (
     <View style={styles.medicineCard}>
+      {/* --- Medicine Name --- */}
       <View style={styles.medicineHeader}>
         <InputCompt
           placeholder="Medicine Name"
-          value={name}
-          onChangeText={text => onUpdate({...item, name: text})}
-          style={{flex: 1, marginTop: 0, marginBottom: 0}} // Override margins
+          value={medicineName}
+          onChangeText={text => onUpdate({...item, medicineName: text})}
+          style={{flex: 1, marginTop: 0, marginBottom: 0}}
         />
-        <TouchableOpacity onPress={onDelete} style={{marginLeft: 10}}>
-          <Icon name="delete-outline" size={28} color="#e74c3c" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.scheduleContainer}>
-        <Text style={styles.subLabel}>Schedule</Text>
-        <TouchableOpacity
-          style={styles.radioContainer}
-          onPress={() => handleScheduleChange('Before Food')}>
-          <View style={styles.radio}>
-            {schedule === 'Before Food' && <View style={styles.radioFill} />}
-          </View>
-          <Text style={styles.radioLabel}>Before Food</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.radioContainer}
-          onPress={() => handleScheduleChange('After Food')}>
-          <View style={styles.radio}>
-            {schedule === 'After Food' && <View style={styles.radioFill} />}
-          </View>
-          <Text style={styles.radioLabel}>After Food</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.timingsContainer}>
-        {Object.keys(timings).map(time => (
-          <TouchableOpacity
-            key={time}
-            style={styles.checkboxContainer}
-            onPress={() => handleTimingChange(time)}>
-            <View
-              style={[
-                styles.checkbox,
-                timings[time] && styles.checkboxChecked,
-              ]}>
-              {timings[time] && <Icon name="check" size={14} color="#fff" />}
-            </View>
-            <Text style={styles.checkboxLabel}>{time}</Text>
+        {!index == 0 && (
+          <TouchableOpacity onPress={onDelete} style={{marginLeft: 10}}>
+            <Icon name="delete-outline" size={28} color="#e74c3c" />
           </TouchableOpacity>
-        ))}
+        )}
       </View>
+
+      {/* --- Type & SubType --- */}
+      <View style={styles.row}>
+        <View style={{flex: 0.5}}>
+          <Text style={styles.label}>Type</Text>
+          <RNPickerSelect
+            data={[
+              {label: 'Syrup', value: 'Syrup'},
+              {label: 'Tab', value: 'Tab'},
+              {label: 'Injection', value: 'Injection'},
+            ]}
+            placeholder={{label: type || 'Select Type', value: type}}
+            onSelect={value => onUpdate({...item, type: value, subType: ''})}
+          />
+        </View>
+
+        {type === 'Tab' && (
+          <View style={{flex: 0.5}}>
+            <Text style={styles.label}>Tab Type</Text>
+            <RNPickerSelect
+              data={[
+                {label: 'Per Oral', value: 'Per Oral'},
+                {label: 'Sublingual', value: 'Sublingual'},
+              ]}
+              placeholder={{
+                label: subType || 'Select Tab Type',
+                value: subType,
+              }}
+              onSelect={value => onUpdate({...item, subType: value})}
+            />
+          </View>
+        )}
+
+        {type === 'Injection' && (
+          <View style={{flex: 0.5}}>
+            <Text style={styles.label}>Injection Type</Text>
+            <RNPickerSelect
+              data={[
+                {label: 'inj IV', value: 'inj IV'},
+                {label: 'inj IM', value: 'inj IM'},
+                {label: 'inj SC', value: 'inj SC'},
+              ]}
+              placeholder={{
+                label: subType || 'Select Inj Type',
+                value: subType,
+              }}
+              onSelect={value => onUpdate({...item, subType: value})}
+            />
+          </View>
+        )}
+      </View>
+
+      {/* --- Duration --- */}
+      <InputCompt
+        label="Duration"
+        placeholder="e.g., 5 days"
+        value={duration}
+        onChangeText={text => onUpdate({...item, duration: text})}
+      />
+
+      {/* --- Schedule (skip if Injection) --- */}
+      {type !== 'Injection' && (
+        <View style={styles.scheduleContainer}>
+          <Text style={styles.subLabel}>Schedule</Text>
+          {Object.keys(schedule).map(time => (
+            <View key={time} style={styles.timeRow}>
+              <Text
+                style={{
+                  color: Colors.BLACK,
+                  fontFamily: Fonts.PoppinsRegular,
+                  textTransform: 'capitalize',
+                }}>
+                {time}
+              </Text>
+
+              {/* Before Food */}
+
+              <View style={{flexDirection: 'row'}}>
+                <TouchableOpacity
+                  style={styles.radioContainer}
+                  onPress={() => toggleSchedule(time, 'beforeFood')}>
+                  <View style={styles.radio}>
+                    {schedule[time].beforeFood && (
+                      <View style={styles.radioFill} />
+                    )}
+                  </View>
+                  <Text style={styles.radioLabel}>Before Food</Text>
+                </TouchableOpacity>
+
+                {/* After Food */}
+                <TouchableOpacity
+                  style={styles.radioContainer}
+                  onPress={() => toggleSchedule(time, 'afterFood')}>
+                  <View style={styles.radio}>
+                    {schedule[time].afterFood && (
+                      <View style={styles.radioFill} />
+                    )}
+                  </View>
+                  <Text style={styles.radioLabel}>After Food</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 };
@@ -704,21 +254,38 @@ const AddPrescriptionScreen = () => {
   const [recommendedTests, setRecommendedTests] = useState(['Blood Test']);
   const [recommendedLab, setRecommendedLab] = useState(null);
   const [notes, setNotes] = useState('');
+  const [condition, setCondition] = useState('');
 
-  // State for the dynamic list of medicines
   const [medicines, setMedicines] = useState([
     {
-      id: 1,
-      name: 'Paracetamol',
-      schedule: 'After Food', // 'Before Food' or 'After Food'
-      timings: {
-        Morning: true,
-        Afternoon: false,
-        Evening: true,
-        Night: false,
+      medicineName: '', // String
+      type: '', // "Syrup" | "Tab" | "Injection"
+      subType: '', // optional string
+      duration: '', // optional string
+      schedule: {
+        morning: {
+          beforeFood: false,
+          afterFood: false,
+        },
+        afternoon: {
+          beforeFood: false,
+          afterFood: false,
+        },
+        night: {
+          beforeFood: false,
+          afterFood: false,
+        },
       },
     },
   ]);
+
+  // Checkbox toggle function
+  const toggleSchedule = (index, time, field) => {
+    const updated = [...medicines];
+    updated[index].schedule[time][field] =
+      !updated[index].schedule[time][field];
+    setMedicines(updated);
+  };
 
   const handleAddMedicine = () => {
     const newMedicine = {
@@ -782,7 +349,7 @@ const AddPrescriptionScreen = () => {
                 label="Full Name"
                 value={fullName}
                 onChangeText={setFullName}
-                style={{marginTop:0}}
+                style={{marginTop: 0}}
               />
             </View>
           </View>
@@ -795,6 +362,13 @@ const AddPrescriptionScreen = () => {
             onChangeText={setAge}
             keyboardType="numeric"
             maxLength={3}
+          />
+
+          <InputCompt
+            label={'Condition'}
+            placeholder="Describe your condition"
+            value={condition}
+            onChangeText={setCondition}
           />
         </View>
 
@@ -840,18 +414,19 @@ const AddPrescriptionScreen = () => {
         {/* --- Prescribed Medicines Section --- */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Prescribed Medicines</Text>
-          {medicines.map(med => (
+          {medicines.map((med, index) => (
             <MedicineInput
               key={med.id}
               item={med}
               onUpdate={updatedMed => handleUpdateMedicine(med.id, updatedMed)}
               onDelete={() => handleDeleteMedicine(med.id)}
+              index={index}
             />
           ))}
           <TouchableOpacity
             style={styles.addMoreButton}
             onPress={handleAddMedicine}>
-            <Icon name="add" size={20} color="#007bff" />
+            <Icon name="add" size={20} color={Colors.WHITE} />
             <Text style={styles.addMoreButtonText}>Add More Medicine</Text>
           </TouchableOpacity>
         </View>
@@ -962,8 +537,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   scheduleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    // flexDirection: 'row',
+    alignItems: 'flex-start',
     marginBottom: 12,
   },
   radioContainer: {
@@ -990,7 +565,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 12,
     fontFamily: Fonts.PoppinsRegular,
-    color:Colors.BLACK
+    color: Colors.BLACK,
   },
   timingsContainer: {
     flexDirection: 'row',
@@ -1022,14 +597,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 12,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#007bff',
+    // borderWidth: 1,
+    // borderColor: '#007bff',
     borderStyle: 'dashed',
-    backgroundColor: '#e7f5ff',
+    backgroundColor: Colors.APPCOLOR,
     marginTop: 8,
   },
   addMoreButtonText: {
-    color: '#007bff',
+    color: Colors.WHITE,
     fontFamily: Fonts.PoppinsSemiBold,
     marginLeft: 8,
   },

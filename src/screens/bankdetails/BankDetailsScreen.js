@@ -170,7 +170,8 @@ import {ApiRoutes} from '../../utils/ApiRoutes';
 import {decryptData} from '../../utils/encryptionUtils';
 import {showErrorToast, showSuccessToast} from '../../utils/HelperFuntions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
+import {setDoctorDetails} from '../../redux/redux_slice/DoctorDetailsSlice';
 
 // ✅ Validation Schema with Yup
 const BankDetailsSchema = Yup.object().shape({
@@ -186,7 +187,9 @@ const BankDetailsSchema = Yup.object().shape({
     .required('IFSC code is required'),
 });
 
-const BankDetailsScreen = () => {
+const BankDetailsScreen = ({navigation}) => {
+  const dispatch = useDispatch();
+
   const doctorDetails = useSelector(state => state.doctorDetails);
 
   const BankDetails = doctorDetails?.bankDetails;
@@ -223,6 +226,8 @@ const BankDetailsScreen = () => {
 
       if (resData?.code === 200 || resData?.code === 201) {
         showSuccessToast('Success', resData?.message);
+        dispatch(setDoctorDetails(resData?.data));
+        navigation.goBack();
       } else {
         showErrorToast('Failed', resData?.message || 'Something went wrong');
       }

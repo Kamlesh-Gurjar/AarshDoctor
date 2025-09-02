@@ -29,10 +29,10 @@ const CalenderController = () => {
       const decrypted = decryptData(response.data);
 
       if (decrypted.code === 200 || decrypted.code === 201) {
-        console.log(
-          '----getAllOfflineCalender-------',
-          JSON.stringify(decrypted),
-        );
+        // console.log(
+        //   '----getAllOfflineCalender-------',
+        //   JSON.stringify(decrypted),
+        // );
         setofflineCalenderdata(decrypted?.data);
       } else {
         console.log('response', decrypted?.message);

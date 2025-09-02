@@ -1,5 +1,5 @@
-// screens/Profile/CertificationsScreen.js (adjust path as needed)
-import React from 'react';
+// screens/Profile/CertificationsScreen.js
+import React, {useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -8,32 +8,42 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
-  Alert, // Using Alert for better user feedback on errors
+  Alert,
 } from 'react-native';
 import {useFormik} from 'formik';
 import * as Yup from 'yup';
 import DocumentPicker from '@react-native-documents/picker'; // Using the specified package
 import Icon from '@react-native-vector-icons/material-icons';
-import {ButtonCompt, HeaderCompt} from '../../components'; // Adjust path
-import {Colors} from '../../theme/Colors'; // Adjust path
-import Fonts from '../../theme/Fonts';     // Adjust path
+import {Picker} from '@react-native-picker/picker'; // <-- dropdown
+import {ButtonCompt, HeaderCompt} from '../../components';
+import {Colors} from '../../theme/Colors';
+import Fonts from '../../theme/Fonts';
+import {useDispatch, useSelector} from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ApiRequest from '../../network/ApiRequest';
+import {ApiRoutes} from '../../utils/ApiRoutes';
+import {showErrorToast, showSuccessToast} from '../../utils/HelperFuntions';
+import {decryptData} from '../../utils/encryptionUtils';
+import {setDoctorDetails} from '../../redux/redux_slice/DoctorDetailsSlice';
 
-// Validation Schema remains the same
+// Validation schema
 const CertificationsSchema = Yup.object().shape({
-  idProof: Yup.array()
-    .min(1, 'ID Proof is required')
-    .required('ID Proof is required'),
-  qualification: Yup.array()
-    .min(1, 'At least one Qualification Certificate is required')
-    .required('Qualification Certificate is required'),
+  idProof: Yup.array().min(1, 'ID Proof is required'),
+  qualification: Yup.array().min(1, 'Qualification is required'),
+  otherDocuments: Yup.array().of(
+    Yup.object().shape({
+      selectedDocumentType: Yup.string().required('Document type required'),
+      otherDocumentFile: Yup.array().min(1, 'File is required'),
+    }),
+  ),
 });
 
-// Reusable component to display a picked file
+// File Display
 const FileDisplay = ({file, onRemove}) => (
   <View style={styles.fileDisplayContainer}>
-    <Icon name="attachment" size={20} color={Colors.PRIMARY} />
+    <Icon name="attachment" size={20} color={Colors.BLACK} />
     <Text style={styles.fileName} numberOfLines={1}>
-      {file.name}
+      {file.name || file.uri}
     </Text>
     <Pressable onPress={onRemove}>
       <Icon name="close" size={22} color={Colors.GRAY_DARK} />
@@ -41,78 +51,225 @@ const FileDisplay = ({file, onRemove}) => (
   </View>
 );
 
-const CertificationsScreen = () => {
+const CertificationsScreen = ({navigation}) => {
+  const dispatch = useDispatch();
+  const [docTypes] = useState([
+    {label: 'Medical Council Registration', value: 'registration'},
+    {label: 'Experience Certificate', value: 'experience'},
+    {label: 'Other', value: 'other'},
+  ]);
+
+  const doctorDetails = useSelector(
+    state => state.doctorDetails?.profileVerification,
+  );
+
+  console.log('---doctorDetails---', doctorDetails);
+
+  // Utility function to normalize file
+  const mapFile = url => ({
+    uri: url,
+    name: url.split('/').pop(),
+    type: url.endsWith('.pdf') ? 'application/pdf' : 'image/png',
+  });
+
   const formik = useFormik({
     initialValues: {
-      idProof: [],
-      qualification: [],
+      idProof: doctorDetails?.identityProof?.map(mapFile) || [],
+      qualification: doctorDetails?.educationCertificate?.map(mapFile) || [],
+      otherDocuments:
+        doctorDetails?.otherDocuments?.map(doc => ({
+          ...doc,
+          // backend me string hota hai → UI ke liye array bana diya
+          otherDocumentFile: Array.isArray(doc.otherDocumentFile)
+            ? doc.otherDocumentFile.map(mapFile)
+            : [mapFile(doc.otherDocumentFile)],
+        })) || [],
     },
     validationSchema: CertificationsSchema,
-    onSubmit: (values, {setSubmitting}) => {
-      console.log('Submitting Certifications:', values);
-      // Here you would typically format the data for a multipart/form-data API request
-      setTimeout(() => {
+    // onSubmit: (values, {setSubmitting}) => {
+    //   console.log('Submitting:', values);
+
+    //   // 🚀 Backend ko bhejne ke liye wapas string format banado
+    //   const payload = {
+    //     idProof: values.idProof.map(f => f.uri),
+    //     qualification: values.qualification.map(f => f.uri),
+    //     otherDocuments: values.otherDocuments.map(doc => ({
+    //       ...doc,
+    //       otherDocumentFile: doc.otherDocumentFile[0]?.uri || '', // string bhejna hai
+    //     })),
+    //   };
+
+    //   console.log('Payload:', payload);
+
+    //   setTimeout(() => {
+    //     setSubmitting(false);
+    //     Alert.alert('Success', 'Certifications updated.');
+    //   }, 1200);
+    // },
+
+    onSubmit: async (values, {setSubmitting}) => {
+      console.log('Submitting:', values);
+
+      // ✅ Transform to backend format
+      const payload = {
+        identityProof: values.idProof.map(f => f.uri), // array of strings
+        educationCertificate: values.qualification.map(f => f.uri), // array of strings
+        otherDocuments: values.otherDocuments.map(doc => ({
+          _id: doc._id || undefined, // if id exists
+          otherDocumentFile: doc.otherDocumentFile[0]?.uri || '', // backend needs string
+          otherDocumentName: doc.otherDocumentName || '',
+          selectedDocumentType: doc.selectedDocumentType,
+        })),
+      };
+
+      console.log('Payload--------------------:', payload);
+
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        const response = await ApiRequest({
+          BASEURL: ApiRoutes.addDoctorDocument,
+          method: 'POST',
+          req: payload,
+          token,
+        });
+
+        const resData = await decryptData(response.data);
+
+        console.log('----------------', resData);
+
+        // handle API response
+        if (resData?.code === 200 || resData?.code === 201) {
+          showSuccessToast('Success', response.data?.message);
+          dispatch(setDoctorDetails(resData?.data));
+
+          navigation.goBack();
+        } else {
+          showErrorToast(
+            'Failed',
+            response?.data?.message || 'Something went wrong',
+          );
+        }
+      } catch (error) {
+        console.error('Certifications Update Error:', error?.message || error);
+        showErrorToast(
+          'Failed',
+          error?.message || 'Error updating certifications',
+        );
+      } finally {
         setSubmitting(false);
-        Alert.alert('Success', 'Certifications have been updated.');
-      }, 1500);
+      }
     },
   });
 
-  // Updated function to use the new library's API
-  const handleChooseFile = async (fieldName, allowMultiple = false) => {
+  // File Picker
+  const handleChooseFile = async (
+    fieldName,
+    allowMultiple = false,
+    index = null,
+  ) => {
     try {
-      const pickerOptions = {
-        presentationStyle: 'fullScreen', // Recommended for iOS
+      const results = await DocumentPicker.pickMultiple({
         type: [DocumentPicker.types.pdf, DocumentPicker.types.images],
-        allowMultiSelection: allowMultiple,
-      };
+      });
 
-      // Call the picker function. The result is an array even for single selection.
-      const results = await DocumentPicker.pick(pickerOptions);
-
-      const currentFiles = formik.values[fieldName];
-
-      if (allowMultiple) {
-        // Append all new files
-        formik.setFieldValue(fieldName, [...currentFiles, ...results]);
+      if (fieldName === 'otherDocuments' && index !== null) {
+        const updatedDocs = [...formik.values.otherDocuments];
+        updatedDocs[index].otherDocumentFile = results;
+        formik.setFieldValue('otherDocuments', updatedDocs);
       } else {
-        // Replace the current file (or add if none exists)
-        formik.setFieldValue(fieldName, results);
+        if (allowMultiple) {
+          formik.setFieldValue(fieldName, [
+            ...formik.values[fieldName],
+            ...results,
+          ]);
+        } else {
+          formik.setFieldValue(fieldName, results);
+        }
       }
-
     } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
-        // User cancelled the picker dialog
-        console.log('User cancelled the file picker.');
-      } else {
-        // An unknown error occurred
-        console.error('An error occurred while picking the file:', err);
-        Alert.alert('Error', 'Could not pick the file. Please try again.');
+      if (!DocumentPicker.isCancel(err)) {
+        console.error(err);
+        Alert.alert('Error', 'Could not pick the file.');
       }
     }
   };
 
-  const removeFile = (fieldName, indexToRemove) => {
-    const updatedFiles = formik.values[fieldName].filter(
-      (_, index) => index !== indexToRemove,
-    );
-    formik.setFieldValue(fieldName, updatedFiles);
+  // Remove file
+  const removeFile = (fieldName, indexToRemove, docIndex = null) => {
+    if (fieldName === 'otherDocuments' && docIndex !== null) {
+      const updatedDocs = [...formik.values.otherDocuments];
+      updatedDocs[docIndex].otherDocumentFile = updatedDocs[
+        docIndex
+      ].otherDocumentFile.filter((_, idx) => idx !== indexToRemove);
+      formik.setFieldValue('otherDocuments', updatedDocs);
+    } else {
+      const updatedFiles = formik.values[fieldName].filter(
+        (_, index) => index !== indexToRemove,
+      );
+      formik.setFieldValue(fieldName, updatedFiles);
+    }
+  };
+
+  // Add another otherDocument
+  const addOtherDocument = () => {
+    formik.setFieldValue('otherDocuments', [
+      ...formik.values.otherDocuments,
+      {selectedDocumentType: '', otherDocumentFile: []},
+    ]);
+  };
+
+  // Change document type
+  const changeDocType = (index, value) => {
+    const updatedDocs = [...formik.values.otherDocuments];
+    updatedDocs[index].selectedDocumentType = value;
+    formik.setFieldValue('otherDocuments', updatedDocs);
+  };
+
+  const handleSubmit = async values => {
+    const token = await AsyncStorage.getItem('userToken');
+
+    const req = {};
+
+    try {
+      setIsLoading(true);
+
+      const response = await ApiRequest({
+        BASEURL: ApiRoutes.addDoctorDocument,
+        method: 'POST',
+        req: req,
+        token: token,
+      });
+
+      const resData = await decryptData(response.data);
+
+      console.log('------------resData-------', resData);
+
+      if (resData?.code === 200 || resData?.code === 201) {
+        showSuccessToast('Success', resData?.message);
+        navigation.goBack();
+      } else {
+        showErrorToast('Failed', resData?.message || 'Something went wrong');
+      }
+    } catch (error) {
+      console.error('Bank Details Update Error:', error?.message || error);
+      showErrorToast('Failed', error?.message || 'Error updating bank details');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <HeaderCompt title={'Update Certifications'} />
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        keyboardShouldPersistTaps="handled">
-        {/* ID Proof Section */}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {/* ID Proof */}
         <View style={styles.formSection}>
-          <Text style={styles.label}>ID Proof (Single File)</Text>
-          {formik.values.idProof.map((file, index) => (
+          <Text style={styles.label}>ID Proof</Text>
+          {formik.values.idProof.map((file, idx) => (
             <FileDisplay
-              key={index}
+              key={idx}
               file={file}
-              onRemove={() => removeFile('idProof', index)}
+              onRemove={() => removeFile('idProof', idx)}
             />
           ))}
           <Pressable
@@ -120,19 +277,16 @@ const CertificationsScreen = () => {
             onPress={() => handleChooseFile('idProof', false)}>
             <Text style={styles.chooseFileText}>Choose File</Text>
           </Pressable>
-          {formik.touched.idProof && formik.errors.idProof && (
-            <Text style={styles.errorText}>{formik.errors.idProof}</Text>
-          )}
         </View>
 
-        {/* Qualification Section */}
+        {/* Qualification */}
         <View style={styles.formSection}>
-          <Text style={styles.label}>Qualification Certificate (Multiple Files)</Text>
-          {formik.values.qualification.map((file, index) => (
+          <Text style={styles.label}>Qualification Certificate</Text>
+          {formik.values.qualification.map((file, idx) => (
             <FileDisplay
-              key={index}
+              key={idx}
               file={file}
-              onRemove={() => removeFile('qualification', index)}
+              onRemove={() => removeFile('qualification', idx)}
             />
           ))}
           <Pressable
@@ -140,15 +294,62 @@ const CertificationsScreen = () => {
             onPress={() => handleChooseFile('qualification', true)}>
             <Text style={styles.chooseFileText}>Choose Files</Text>
           </Pressable>
-           {formik.touched.qualification && formik.errors.qualification && (
-             <Text style={styles.errorText}>{formik.errors.qualification}</Text>
-          )}
         </View>
 
-        {/* Submit Button */}
+        {/* Other Documents */}
+        <Text style={[styles.label, {marginBottom: 10}]}>Other Documents</Text>
+        {formik.values.otherDocuments.map((doc, index) => (
+          <View key={index} style={styles.otherDocBox}>
+            {/* Dropdown */}
+            <Text style={styles.dropdownLabel}>Select Document Type</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={doc.selectedDocumentType}
+                onValueChange={value => changeDocType(index, value)}
+                style={styles.picker}>
+                <Picker.Item label="Select type..." value="" />
+                {docTypes.map(type => (
+                  <Picker.Item
+                    key={type.value}
+                    label={type.label}
+                    value={type.value}
+                  />
+                ))}
+              </Picker>
+            </View>
+
+            {doc.otherDocumentFile.map((file, idx) => (
+              <FileDisplay
+                key={idx}
+                file={file}
+                onRemove={() => removeFile('otherDocuments', idx, index)}
+              />
+            ))}
+
+            <Text
+              style={{
+                color: Colors.BLACK,
+                fontSize: 10,
+                fontFamily: Fonts.PoppinsRegular,
+              }}>
+              Allowed formats: PDF, JPG, JPEG, PNG
+            </Text>
+
+            <Pressable
+              style={styles.chooseFileButton}
+              onPress={() => handleChooseFile('otherDocuments', false, index)}>
+              <Text style={styles.chooseFileText}>Choose File</Text>
+            </Pressable>
+          </View>
+        ))}
+        <Pressable style={styles.addDocBtn} onPress={addOtherDocument}>
+          <Text style={styles.addDocText}>+ Add another document</Text>
+        </Pressable>
+
+        {/* Submit */}
         <View style={styles.buttonContainer}>
           {formik.isSubmitting ? (
-            <ActivityIndicator size="large" color={Colors.PRIMARY} />
+            <ActivityIndicator size="large" color={Colors.BLACK} />
           ) : (
             <ButtonCompt title={'Update'} onPress={formik.handleSubmit} />
           )}
@@ -166,30 +367,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: Fonts.PoppinsMedium,
     color: Colors.BLACK,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   chooseFileButton: {
     borderWidth: 1,
-    borderColor: Colors.PRIMARY,
+    borderColor: Colors.BLACK,
     borderStyle: 'dashed',
     borderRadius: 8,
-    padding: 15,
+    padding: 12,
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
     marginTop: 10,
   },
-  chooseFileText: {
-    color: Colors.PRIMARY,
-    fontFamily: Fonts.PoppinsRegular,
-  },
+  chooseFileText: {color: Colors.BLACK, fontFamily: Fonts.PoppinsRegular},
   fileDisplayContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     marginBottom: 10,
     backgroundColor: '#fff',
   },
@@ -199,293 +396,44 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.PoppinsRegular,
     color: Colors.BLACK,
   },
-  errorText: {
-    color: 'red',
-    fontSize: 12,
-    fontFamily: Fonts.PoppinsRegular,
-    marginTop: 5,
-  },
+  errorText: {color: 'red', fontSize: 12, marginTop: 5},
   buttonContainer: {marginTop: 20},
+  otherDocBox: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  picker: {
+    height: 45,
+    width: '100%',
+    color: Colors.BLACK,
+  },
+  dropdownLabel: {
+    fontSize: 14,
+    marginBottom: 5,
+    fontFamily: Fonts.PoppinsRegular,
+    color: Colors.BLACK,
+  },
+  addDocBtn: {
+    marginBottom: 20,
+    borderWidth: 0.5,
+    padding: 10,
+    alignSelf: 'flex-start',
+    borderRadius: 5,
+  },
+  addDocText: {
+    color: Colors.BLACK,
+    fontSize: 14,
+    fontFamily: Fonts.PoppinsMedium,
+  },
 });
 
 export default CertificationsScreen;
-
-// // screens/Profile/CertificationsScreen.js
-
-// import React, {useState} from 'react';
-// import {
-//   SafeAreaView,
-//   StyleSheet,
-//   Text,
-//   View,
-//   ScrollView,
-//   Pressable,
-//   ActivityIndicator,
-//   Alert,
-// } from 'react-native';
-// import {useFormik} from 'formik';
-// import * as Yup from 'yup';
-// import DocumentPicker from 'react-native-document-picker';
-// import Icon from 'react-native-vector-icons/MaterialIcons';
-// import {ButtonCompt, HeaderCompt} from '../../components';
-// import {Colors} from '../../theme/Colors';
-// import Fonts from '../../theme/Fonts';
-
-// // Validation Schema
-// const CertificationsSchema = Yup.object().shape({
-//   idProof: Yup.array().min(1, 'ID Proof is required').required(),
-//   qualification: Yup.array()
-//     .min(1, 'Qualification Certificate is required')
-//     .required(),
-//   otherDocs: Yup.array().min(1, 'At least one document is required'),
-// });
-
-// // Reusable file display
-// const FileDisplay = ({file, onRemove}) => (
-//   <View style={styles.fileDisplayContainer}>
-//     <Icon name="attachment" size={20} color={Colors.PRIMARY} />
-//     <Text style={styles.fileName} numberOfLines={1}>
-//       {file.name}
-//     </Text>
-//     <Pressable onPress={onRemove}>
-//       <Icon name="close" size={22} color={Colors.GRAY_DARK} />
-//     </Pressable>
-//   </View>
-// );
-
-// const CertificationsScreen = () => {
-//   const [otherDocs, setOtherDocs] = useState([{type: '', files: []}]);
-
-//   const formik = useFormik({
-//     initialValues: {
-//       idProof: [],
-//       qualification: [],
-//       otherDocs: [],
-//     },
-//     validationSchema: CertificationsSchema,
-//     onSubmit: (values, {setSubmitting}) => {
-//       console.log('Submitting Certifications:', values);
-//       setTimeout(() => {
-//         setSubmitting(false);
-//         Alert.alert('Success', 'Certifications have been updated.');
-//       }, 1500);
-//     },
-//   });
-
-//   const handleChooseFile = async (
-//     fieldName,
-//     allowMultiple = false,
-//     index = null,
-//   ) => {
-//     try {
-//       const results = await DocumentPicker.pick({
-//         type: [DocumentPicker.types.pdf, DocumentPicker.types.images],
-//         allowMultiSelection: allowMultiple,
-//       });
-
-//       if (fieldName === 'otherDocs' && index !== null) {
-//         const updatedDocs = [...otherDocs];
-//         updatedDocs[index].files = results;
-//         setOtherDocs(updatedDocs);
-//         formik.setFieldValue('otherDocs', updatedDocs);
-//       } else {
-//         formik.setFieldValue(fieldName, results);
-//       }
-//     } catch (err) {
-//       if (!DocumentPicker.isCancel(err)) {
-//         Alert.alert('Error', 'Could not pick the file. Please try again.');
-//       }
-//     }
-//   };
-
-//   const addOtherDocSection = () => {
-//     setOtherDocs([...otherDocs, {type: '', files: []}]);
-//   };
-
-//   const removeOtherDoc = index => {
-//     const updated = otherDocs.filter((_, i) => i !== index);
-//     setOtherDocs(updated);
-//     formik.setFieldValue('otherDocs', updated);
-//   };
-
-//   return (
-//     <SafeAreaView style={styles.safeArea}>
-//       <HeaderCompt title={'Update Certifications'} />
-//       <ScrollView
-//         contentContainerStyle={styles.scrollContainer}
-//         keyboardShouldPersistTaps="handled">
-//         {/* Existing ID Proof Section */}
-//         <View style={styles.formSection}>
-//           <Text style={styles.label}>ID Proof (Single File)</Text>
-//           {formik.values.idProof.map((file, index) => (
-//             <FileDisplay
-//               key={index}
-//               file={file}
-//               onRemove={() => formik.setFieldValue('idProof', [])}
-//             />
-//           ))}
-//           <Pressable
-//             style={styles.chooseFileButton}
-//             onPress={() => handleChooseFile('idProof', false)}>
-//             <Text style={styles.chooseFileText}>Choose File</Text>
-//           </Pressable>
-//         </View>
-
-//         {/* Qualification Section */}
-//         <View style={styles.formSection}>
-//           <Text style={styles.label}>
-//             Qualification Certificate (Multiple Files)
-//           </Text>
-//           {formik.values.qualification.map((file, index) => (
-//             <FileDisplay
-//               key={index}
-//               file={file}
-//               onRemove={() =>
-//                 formik.setFieldValue(
-//                   'qualification',
-//                   formik.values.qualification.filter((_, i) => i !== index),
-//                 )
-//               }
-//             />
-//           ))}
-//           <Pressable
-//             style={styles.chooseFileButton}
-//             onPress={() => handleChooseFile('qualification', true)}>
-//             <Text style={styles.chooseFileText}>Choose Files</Text>
-//           </Pressable>
-//         </View>
-
-//         {/* 🔹 Other Documents Section */}
-//         <View style={styles.formSection}>
-//           <Text style={styles.label}>Other Documents</Text>
-//           {otherDocs.map((doc, index) => (
-//             <View key={index} style={styles.otherDocContainer}>
-//               <Text style={styles.subLabel}>Document {index + 1}</Text>
-
-//               {/* Dropdown Placeholder */}
-//               <Pressable style={styles.dropdown}>
-//                 <Text
-//                   style={{color: doc.type ? Colors.BLACK : Colors.GRAY_DARK}}>
-//                   {doc.type || 'Select Document Type'}
-//                 </Text>
-//               </Pressable>
-
-//               {doc.files.map((file, i) => (
-//                 <FileDisplay
-//                   key={i}
-//                   file={file}
-//                   onRemove={() => removeOtherDoc(index)}
-//                 />
-//               ))}
-
-//               <Pressable
-//                 style={styles.chooseFileButton}
-//                 onPress={() => handleChooseFile('otherDocs', false, index)}>
-//                 <Text style={styles.chooseFileText}>Choose File</Text>
-//               </Pressable>
-
-//               <Pressable onPress={() => removeOtherDoc(index)}>
-//                 <Text style={{color: 'red', marginTop: 5}}>Remove</Text>
-//               </Pressable>
-//             </View>
-//           ))}
-
-//           <Pressable style={styles.addButton} onPress={addOtherDocSection}>
-//             <Text style={styles.addButtonText}>+ Add another document</Text>
-//           </Pressable>
-//         </View>
-
-//         {/* Submit */}
-//         <View style={styles.buttonContainer}>
-//           {formik.isSubmitting ? (
-//             <ActivityIndicator size="large" color={Colors.PRIMARY} />
-//           ) : (
-//             <ButtonCompt title={'Update'} onPress={formik.handleSubmit} />
-//           )}
-//         </View>
-//       </ScrollView>
-//     </SafeAreaView>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   safeArea: {flex: 1, backgroundColor: Colors.WHITE},
-//   scrollContainer: {padding: 20, paddingBottom: 50},
-//   formSection: {marginBottom: 25},
-//   label: {
-//     fontSize: 16,
-//     fontFamily: Fonts.PoppinsMedium,
-//     color: Colors.BLACK,
-//     marginBottom: 10,
-//   },
-//   subLabel: {
-//     fontSize: 14,
-//     fontFamily: Fonts.PoppinsRegular,
-//     color: Colors.BLACK,
-//     marginBottom: 5,
-//   },
-//   chooseFileButton: {
-//     borderWidth: 1,
-//     borderColor: Colors.PRIMARY,
-//     borderStyle: 'dashed',
-//     borderRadius: 8,
-//     padding: 15,
-//     alignItems: 'center',
-//     backgroundColor: '#f8f9fa',
-//     marginTop: 10,
-//   },
-//   chooseFileText: {color: Colors.PRIMARY, fontFamily: Fonts.PoppinsRegular},
-//   fileDisplayContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     borderWidth: 1,
-//     borderColor: '#ccc',
-//     borderRadius: 8,
-//     paddingHorizontal: 15,
-//     paddingVertical: 12,
-//     marginBottom: 10,
-//     backgroundColor: '#fff',
-//   },
-//   fileName: {
-//     flex: 1,
-//     marginLeft: 10,
-//     fontFamily: Fonts.PoppinsRegular,
-//     color: Colors.BLACK,
-//   },
-//   errorText: {
-//     color: 'red',
-//     fontSize: 12,
-//     fontFamily: Fonts.PoppinsRegular,
-//     marginTop: 5,
-//   },
-//   buttonContainer: {marginTop: 20},
-//   otherDocContainer: {
-//     borderWidth: 1,
-//     borderColor: '#ddd',
-//     padding: 10,
-//     borderRadius: 8,
-//     marginBottom: 15,
-//   },
-//   dropdown: {
-//     borderWidth: 1,
-//     borderColor: '#ccc',
-//     borderRadius: 8,
-//     padding: 12,
-//     marginBottom: 10,
-//     backgroundColor: '#fff',
-//   },
-//   addButton: {
-//     marginTop: 10,
-//     padding: 12,
-//     borderWidth: 1,
-//     borderColor: Colors.PRIMARY,
-//     borderRadius: 8,
-//   },
-//   addButtonText: {
-//     color: Colors.PRIMARY,
-//     textAlign: 'center',
-//     fontFamily: Fonts.PoppinsRegular,
-//   },
-// });
-
-// export default CertificationsScreen;

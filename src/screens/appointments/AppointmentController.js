@@ -1,10 +1,11 @@
 import {View, Text, PermissionsAndroid, Platform} from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ApiRequest from '../../network/ApiRequest';
 import {decryptData} from '../../utils/encryptionUtils';
 import {ApiRoutes} from '../../utils/ApiRoutes';
+import {useFocusEffect} from '@react-navigation/native';
 
 const AppointmentController = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,9 +94,15 @@ const AppointmentController = () => {
     }
   };
 
-  useEffect(() => {
-    getDoctorDetails();
-  }, []);
+  // useEffect(() => {
+  //   getDoctorDetails();
+  // }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      getDoctorDetails();
+    }, []),
+  );
 
   const handleSearch = text => {
     setSearchQuery(text);

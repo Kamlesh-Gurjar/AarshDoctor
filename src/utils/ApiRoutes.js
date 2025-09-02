@@ -40,4 +40,6 @@ export const ApiRoutes = {
     AppConstant.BASEURL + '/api/package/get-purchased-subscription-plan', //complete
 
   addBasicProfile: AppConstant.BASEURL + '/api/doctor/add-doctor-basic-detail',
+
+  addDoctorDocument: AppConstant.BASEURL + '/api/doctor/add-doctor-document',
 };

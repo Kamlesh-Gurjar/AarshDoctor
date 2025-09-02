@@ -21,10 +21,20 @@ import {
   TimePickerModal,
 } from '../../components';
 import {useRoute} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ApiRequest from '../../network/ApiRequest';
+import {ApiRoutes} from '../../utils/ApiRoutes';
+import {decryptData} from '../../utils/encryptionUtils';
+import {showErrorToast, showSuccessToast} from '../../utils/HelperFuntions';
+import {useSelector} from 'react-redux';
 
-const RescheduleAppointmentScreen = () => {
+const RescheduleAppointmentScreen = ({navigation}) => {
+  const doctorID = useSelector(state => state.doctorDetails?._id);
+
   const route = useRoute();
   const appointmentData = route?.params?.item;
+
+  const appointmentID = appointmentData?._id;
 
   const [doctor, setDoctor] = useState({
     salutation: appointmentData?.patientId?.salutation,
@@ -32,10 +42,11 @@ const RescheduleAppointmentScreen = () => {
     contact: appointmentData?.patientId?.contact,
   });
 
-  // --- State for Date Picker ---
+  const [selectedDate, setSelectedDate] = useState(
+    appointmentData?.date ? new Date(appointmentData.date) : new Date(),
+  );
 
-  console.log('------', new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  // console.log('-----selectedDate-------', selectedDate);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   // --- State for Time Pickers ---
@@ -62,6 +73,24 @@ const RescheduleAppointmentScreen = () => {
     return `${day}-${month}-${year}`;
   };
 
+  // UI ke liye: DD-MM-YYYY
+  const formatDateForUI = date => {
+    if (!date) return '';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  // API ke liye: YYYY-MM-DD
+  const formatDateForAPI = date => {
+    if (!date) return '';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`;
+  };
+
   const onDateChange = (event, date) => {
     setShowDatePicker(Platform.OS === 'ios');
     if (date) {
@@ -85,25 +114,46 @@ const RescheduleAppointmentScreen = () => {
     // The modal will close itself via its onTimeSelect prop
   };
 
-  // const slotsData = [
-  //   {
-  //     date: '26 Aug 2025',
-  //     dayOfWeek: 'Tuesday',
-  //     slots: [
-  //       {id: '1', startTime: '07:00 AM', endTime: '07:15 AM'},
-  //       {id: '2', startTime: '07:15 AM', endTime: '07:30 AM'},
-  //     ],
-  //   },
-  //   {
-  //     date: '27 Aug 2025',
-  //     dayOfWeek: 'Wednesday',
-  //     slots: [
-  //       {id: '3', startTime: '07:00 AM', endTime: '07:15 AM'},
-  //       {id: '4', startTime: '07:15 AM', endTime: '07:30 AM'},
-  //       {id: '5', startTime: '07:30 AM', endTime: '07:45 AM'},
-  //     ],
-  //   },
-  // ];
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async values => {
+    const token = await AsyncStorage.getItem('userToken');
+
+    const req = {
+      doctorId: doctorID,
+      appointmentId: appointmentID,
+      date: formatDateForAPI(selectedDate),
+      startTime: startTime,
+      endTime: endTime,
+    };
+
+    // console.log("------req-------------",req)
+
+    try {
+      setIsLoading(true);
+
+      const response = await ApiRequest({
+        BASEURL: ApiRoutes.rescheduleAppointment,
+        method: 'POST',
+        req: req,
+        token: token,
+      });
+
+      const resData = await decryptData(response.data);
+
+      if (resData?.code === 200 || resData?.code === 201) {
+        showSuccessToast('Success', resData?.message);
+        navigation.goBack();
+      } else {
+        showErrorToast('Failed', resData?.message || 'Something went wrong');
+      }
+    } catch (error) {
+      console.error('Bank Details Update Error:', error?.message || error);
+      showErrorToast('Failed', error?.message || 'Error updating bank details');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -121,6 +171,7 @@ const RescheduleAppointmentScreen = () => {
             //   setDoctor({...doctor, salutation: itemValue})
             // }
             style={{flex: 0.4}}
+            disabled={true}
           />
           <InputCompt
             label="Full Name"
@@ -146,7 +197,9 @@ const RescheduleAppointmentScreen = () => {
             activeOpacity={0.8}
             style={styles.pickerBox}
             onPress={() => setShowDatePicker(true)}>
-            <Text style={styles.pickerText}>{formatDate(selectedDate)}</Text>
+            <Text style={styles.pickerText}>
+              {formatDateForUI(selectedDate)}
+            </Text>
             <Icon name="calendar-today" size={22} color={Colors.GRAY} />
           </TouchableOpacity>
         </View>
@@ -222,7 +275,8 @@ const RescheduleAppointmentScreen = () => {
         ))} */}
         <ButtonCompt
           title={'Reschedule '}
-          onPress={() => Alert.alert('--------')}
+          isLoading={isLoading}
+          onPress={handleSubmit}
         />
       </ScrollView>
 
