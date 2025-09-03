@@ -237,6 +237,7 @@ import AppointmentController from './AppointmentController';
 
 // Your Styles
 import styles from './styles.appointment';
+import {useSelector} from 'react-redux';
 
 // --- New Custom Tab Bar Component ---
 // This component will render the tabs at the top.
@@ -285,6 +286,9 @@ const Appointments = ({navigation}) => {
     allLatestAppointmentLoading, // Loading state for the "Latest" tab
   } = AppointmentController();
 
+  console.log('-----------------', userData?.profilePic);
+  const doctorDetails = useSelector(state => state.doctorDetails);
+
   // --- DYNAMIC CONTENT VARIABLES ---
   // These variables will change based on the active tab
   const isLatestTab = activeTab === 'Latest';
@@ -326,7 +330,9 @@ const Appointments = ({navigation}) => {
         showBack={false}
         title={userData?.name}
         leftimage={{
-          uri: userData?.profilePic,
+          uri: doctorDetails?.profilePic?.endsWith('.avif')
+            ? doctorDetails?.profilePic.replace('.avif', '.jpg') // fallback
+            : doctorDetails?.profilePic,
         }}
         rightIcon={imageindex.edit}
         onPressRight={() => navigation.navigate('ProfileDetails')}

@@ -1,5 +1,12 @@
 import React, {memo} from 'react';
-import {Image, TouchableOpacity, StyleSheet, Text, View} from 'react-native';
+import {
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Text,
+  View,
+  Pressable,
+} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import imageindex from '../../assets/images/imageindex';
 import {Colors} from '../../theme/Colors';
@@ -11,6 +18,10 @@ const HeaderCompt = ({
   leftimage,
   rightIcon,
   onPressRight,
+  showpausebutton,
+  onPressPause,
+  addClicnicbutton,
+  onPressAddClinic,
 }) => {
   const navigation = useNavigation();
 
@@ -43,6 +54,46 @@ const HeaderCompt = ({
           onPress={onPressRight}>
           <Image source={rightIcon} style={styles.backIcon} />
         </TouchableOpacity>
+      )}
+
+      {showpausebutton && (
+        <Pressable
+          onPress={onPressPause}
+          style={{
+            paddingVertical: 5,
+            backgroundColor: Colors.APPCOLOR,
+            borderRadius: 5,
+            paddingHorizontal: 10,
+          }}>
+          <Text
+            style={{
+              color: Colors.WHITE,
+              fontFamily: Fonts.PoppinsMedium,
+              fontSize: 12,
+            }}>
+            Pause Slots
+          </Text>
+        </Pressable>
+      )}
+
+      {addClicnicbutton && (
+        <Pressable
+          onPress={onPressAddClinic}
+          style={{
+            paddingVertical: 5,
+            backgroundColor: Colors.APPCOLOR,
+            borderRadius: 5,
+            paddingHorizontal: 10,
+          }}>
+          <Text
+            style={{
+              color: Colors.WHITE,
+              fontFamily: Fonts.PoppinsMedium,
+              fontSize: 12,
+            }}>
+            + Add Clinic
+          </Text>
+        </Pressable>
       )}
     </View>
   );

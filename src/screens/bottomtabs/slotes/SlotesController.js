@@ -17,6 +17,8 @@ const SlotsController = () => {
   const [doctorId, setDoctorId] = useState(null);
   const doctorDetails = useSelector(state => state.doctorDetails);
 
+  const [showpausemodal,setshowpauseModal]=useState(false)
+
   // console.log('-----------doctorDetails--------', doctorDetails);
 
   const getAllOfflineSlots = async () => {
@@ -148,6 +150,8 @@ const SlotsController = () => {
     getAllOfflineSlots,
     getAllOnlineSlots,
     navigation,
+    showpausemodal,
+    setshowpauseModal
   };
 };
 

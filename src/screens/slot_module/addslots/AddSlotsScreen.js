@@ -288,7 +288,7 @@ const AddSlotsScreen = ({navigation}) => {
               <Text style={styles.btnText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.doneBtn} onPress={handleSaveTime}>
-              <Text style={styles.btnText}>Done</Text>
+              <Text style={[styles.btnText, {color: Colors.WHITE}]}>Done</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -333,13 +333,84 @@ const AddSlotsScreen = ({navigation}) => {
 
   // doctorClinicId, slotsByDay, type = "offline"
 
-  const handleSubmit = async values => {
+  // const handleSubmit = async values => {
+  //   const token = await AsyncStorage.getItem('userToken');
+
+  //   const req = {
+  //     doctorClinicId: slotType == 'Offline' ? selectedClinic?._id : '',
+  //     slotsByDay: resultData,
+  //     type: slotType == 'Offline' ? 'offline' : 'online',
+  //   };
+
+  //   try {
+  //     setIsLoading(true);
+
+  //     const response = await ApiRequest({
+  //       BASEURL: ApiRoutes.addDoctorClinicSlot,
+  //       method: 'POST',
+  //       req: req,
+  //       token: token,
+  //     });
+
+  //     const resData = await decryptData(response.data);
+
+  //     console.log('------------resData-------', resData);
+
+  //     if (resData?.code === 200 || resData?.code === 201) {
+  //       showSuccessToast('Success', resData?.message);
+  //       navigation.goBack();
+  //     } else {
+  //       showErrorToast('Failed', resData?.message || 'Something went wrong');
+  //     }
+  //   } catch (error) {
+  //     console.error('Slots Error:', error?.message || error);
+  //     showErrorToast('Failed', error?.message || 'Error  slots booking');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  const handleSubmit = async () => {
+    // New Validation 1: Clinic selection for Offline slots
+    if (slotType === 'Offline' && !selectedClinic) {
+      showErrorToast('Please select a clinic for offline slots.');
+      return; // Stop submission
+    }
+
+    // New Validation 2: Check for incomplete slots only on days that have *some* defined slots for submission
+    // First, filter out days that only have the initial empty slot (or no slots at all)
+    const daysWithDefinedSlots = Object.keys(slots).filter(
+      day => slots[day].some(s => s.start || s.end), // A day has defined slots if at least one slot has a start or end time
+    );
+
+    // Then, check if any of these "defined" days have incomplete slots
+    const hasIncompleteDefinedSlots = daysWithDefinedSlots.some(day =>
+      slots[day].some(slot => slot.start === '' || slot.end === ''),
+    );
+
+    if (hasIncompleteDefinedSlots) {
+      showErrorToast(
+        'Please fill all start and end times for the days you have added slots.',
+      );
+      return; // Stop submission
+    }
+
+    // New Validation 3: Ensure at least one slot is defined in total across all selected days
+    const totalDefinedSlots = resultData.reduce(
+      (acc, dayEntry) => acc + dayEntry.slots.length,
+      0,
+    );
+    if (totalDefinedSlots === 0) {
+      showErrorToast('Please add at least one time slot for any day.');
+      return; // Stop submission
+    }
+
     const token = await AsyncStorage.getItem('userToken');
 
     const req = {
-      doctorClinicId: slotType == 'Offline' ? selectedClinic?._id : '',
+      doctorClinicId: slotType === 'Offline' ? selectedClinic?._id : '',
       slotsByDay: resultData,
-      type: slotType == 'Offline' ? 'offline' : 'online',
+      type: slotType === 'Offline' ? 'offline' : 'online',
     };
 
     try {
@@ -584,7 +655,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 20,
   },
-  btnText: {color: '#fff', textAlign: 'center', fontWeight: '600'},
+  btnText: {color: Colors.BLACK, textAlign: 'center', fontWeight: '600'},
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -610,9 +681,10 @@ const styles = StyleSheet.create({
   },
   pickerRow: {flexDirection: 'row', justifyContent: 'space-between'},
   optionBtn: {
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     margin: 5,
-    borderWidth: 1,
+    borderWidth: 0.5,
     borderRadius: 8,
     borderColor: '#ccc',
     alignItems: 'center',
@@ -624,16 +696,17 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   cancelBtn: {
-    backgroundColor: 'red',
     padding: 10,
-    borderRadius: 8,
+    borderRadius: 100,
     flex: 1,
     marginRight: 5,
+    borderWidth: 1,
+    borderColor: Colors.APPCOLOR,
   },
   doneBtn: {
-    backgroundColor: 'green',
+    backgroundColor: Colors.APPCOLOR,
     padding: 10,
-    borderRadius: 8,
+    borderRadius: 100,
     flex: 1,
     marginLeft: 5,
   },

@@ -29,7 +29,7 @@ export const ApiRoutes = {
   getLabsName: AppConstant.BASEURL + '/api/lab/get-lab-names', //complete
 
   rescheduleAppointment:
-    AppConstant.BASEURL + '/api/doctor/reschedule-appointment',
+    AppConstant.BASEURL + '/api/doctor/reschedule-appointment', //complete
 
   addDoctorClinicSlot:
     AppConstant.BASEURL + '/api/doctor/add-doctor-clinic-slot',
@@ -42,4 +42,14 @@ export const ApiRoutes = {
   addBasicProfile: AppConstant.BASEURL + '/api/doctor/add-doctor-basic-detail',
 
   addDoctorDocument: AppConstant.BASEURL + '/api/doctor/add-doctor-document',
+
+  pauseSlot: AppConstant.BASEURL + '/api/doctor/pause-slot', //complete
+
+  deleteDoctorClinic: AppConstant.BASEURL + '/api/doctor/delete-doctor-clinic', //complete
+
+  addDoctorClinicDetail:
+    AppConstant.BASEURL + '/api/doctor/add-doctor-clinic-detail',
+
+  updateDoctorClinicDetail:
+    AppConstant.BASEURL + '/api/doctor/update-doctor-clinic',
 };

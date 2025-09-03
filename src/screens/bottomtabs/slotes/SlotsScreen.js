@@ -317,11 +317,12 @@ import {
   FlatList,
   SafeAreaView,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {Colors} from '../../../theme/Colors';
 import Fonts from '../../../theme/Fonts';
-import {ClinicCard, HeaderCompt} from '../../../components';
+import {ClinicCard, DateRangeModal, HeaderCompt} from '../../../components';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import styles from './styles.slotes';
 // Import the controller
@@ -378,6 +379,8 @@ const SlotsScreen = () => {
     onlineClinics,
     isLoadingOffline,
     isLoadingOnline,
+    showpausemodal,
+    setshowpauseModal,
   } = SlotsController(); // Use the hook here
 
   // Handler for Add Slots button press
@@ -392,7 +395,11 @@ const SlotsScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <HeaderCompt title={'Slots'} />
+      <HeaderCompt
+        title={'Slots'}
+        showpausebutton={true}
+        onPressPause={() => setshowpauseModal(!showpausemodal)}
+      />
       <View style={styles.container}>
         {/* Custom Tab Bar */}
         <View style={styles.tabBar}>
@@ -509,6 +516,15 @@ const SlotsScreen = () => {
           </>
         )}
       </View>
+
+      <DateRangeModal
+        visible={showpausemodal}
+        onClose={() => setshowpauseModal(false)}
+        onDone={(start, end) => {
+          console.log('Selected:', start, end);
+          setshowpauseModal(false);
+        }}
+      />
     </SafeAreaView>
   );
 };

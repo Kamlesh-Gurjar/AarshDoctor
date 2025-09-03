@@ -22,6 +22,12 @@ const Profile = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const userData = useSelector(state => state?.user?.userData);
+  const doctorDetails = useSelector(state => state.doctorDetails);
+
+  console.log(
+    '-----------------doctorDetails-------------------',
+    doctorDetails?.profilePic,
+  );
 
   // --- Data for our menu items ---
   const menuItems = [
@@ -47,6 +53,12 @@ const Profile = () => {
       title: 'Manage Subscription',
       icon: 'subscriptions',
       target: 'ManageSubscription',
+      isHighlighted: true,
+    },
+    {
+      title: 'Clinics',
+      icon: 'assured-workload',
+      target: 'AllClinics',
       isHighlighted: true,
     },
     {
@@ -77,13 +89,15 @@ const Profile = () => {
           {/* --- Profile Info Section --- */}
           <View style={styles.profileHeader}>
             <Image
-              source={
-                userData?.profilePic
-                  ? {uri: userData.profilePic}
-                  : imageindex.user
-              }
+              source={{
+                uri: doctorDetails?.profilePic?.endsWith('.avif')
+                  ? doctorDetails?.profilePic.replace('.avif', '.jpg') // fallback
+                  : doctorDetails?.profilePic,
+              }}
               style={styles.profileImage}
+              resizeMode="cover"
             />
+
             <Text style={styles.userName}>{userData?.name || 'UserName'}</Text>
             <Text style={styles.userEmail}>
               {userData?.email || 'User Email'}

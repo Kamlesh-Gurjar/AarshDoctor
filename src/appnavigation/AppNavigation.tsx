@@ -21,6 +21,9 @@ import ManageSubscriptionScreen from '../screens/managesubscription/ManageSubscr
 import AddPrescriptionScreen from '../screens/appointments/AddPrescriptionScreen';
 import RescheduleAppointmentScreen from '../screens/appointments/RescheduleAppointmentScreen';
 import MeetingScreen from '../screens/meetingscreen/MeetingScreen';
+import AddClinic from '../screens/clinic/addclinic/AddClinic';
+import EditClinic from '../screens/clinic/editclinic/EditClinic';
+import AllClinics from '../screens/clinic/allclinics/AllClinics';
 
 const AppNavigation = () => {
   // const [isFirstLaunch, setIsFirstLaunch] = useState(null);
@@ -81,6 +84,11 @@ const AppNavigation = () => {
         <Stack.Screen name="EditSlots" component={EditSlotsScreen} />
         <Stack.Screen name="AddSlots" component={AddSlotsScreen} />
         <Stack.Screen name="Meeting" component={MeetingScreen} />
+
+        {/* Clinic Screens */}
+        <Stack.Screen name="AddClinic" component={AddClinic} />
+        <Stack.Screen name="EditClinic" component={EditClinic} />
+        <Stack.Screen name="AllClinics" component={AllClinics} />
       </Stack.Navigator>
     </NavigationContainer>
   );

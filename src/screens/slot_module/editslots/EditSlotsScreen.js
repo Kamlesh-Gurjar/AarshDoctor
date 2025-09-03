@@ -177,8 +177,6 @@
 
 // export default EditSlotsScreen;
 
-
-
 import React, {useEffect, useState} from 'react';
 import {
   View,
@@ -229,7 +227,7 @@ const toMinutes = time => {
   return hours * 60 + m;
 };
 
-const EditSlotsScreen = ({route,navigation}) => {
+const EditSlotsScreen = ({route, navigation}) => {
   const {item} = route?.params;
   console.log('======slot item=====', JSON.stringify(item));
   const [slotType, setSlotType] = useState('Online');
@@ -471,7 +469,7 @@ const EditSlotsScreen = ({route,navigation}) => {
               <Text style={styles.btnText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.doneBtn} onPress={handleSaveTime}>
-              <Text style={styles.btnText}>Done</Text>
+              <Text style={[styles.btnText, {color: Colors.WHITE}]}>Done</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -553,68 +551,68 @@ const EditSlotsScreen = ({route,navigation}) => {
   // };
 
   const handleSubmit = async () => {
-  const token = await AsyncStorage.getItem('userToken');
+    const token = await AsyncStorage.getItem('userToken');
 
-  const req = {
-    doctorClinicId: slotType === 'Offline' ? selectedClinic?._id : '',
-    slotsByDay: transformSlots(slots), // ✅ yahi convert hoke backend format banega
-    type: slotType === 'Offline' ? 'offline' : 'online',
+    const req = {
+      doctorClinicId: slotType === 'Offline' ? selectedClinic?._id : '',
+      slotsByDay: transformSlots(slots), // ✅ yahi convert hoke backend format banega
+      type: slotType === 'Offline' ? 'offline' : 'online',
+    };
+
+    try {
+      setIsLoading(true);
+      const response = await ApiRequest({
+        BASEURL: ApiRoutes.addDoctorClinicSlot,
+        method: 'POST',
+        req,
+        token,
+      });
+
+      const resData = await decryptData(response.data);
+      if (resData?.code === 200 || resData?.code === 201) {
+        showSuccessToast('Success', resData?.message);
+        navigation.goBack();
+      } else {
+        showErrorToast('Failed', resData?.message || 'Something went wrong');
+      }
+    } catch (error) {
+      showErrorToast('Failed', error?.message || 'Error slots booking');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  try {
-    setIsLoading(true);
-    const response = await ApiRequest({
-      BASEURL: ApiRoutes.addDoctorClinicSlot,
-      method: 'POST',
-      req,
-      token,
-    });
-
-    const resData = await decryptData(response.data);
-    if (resData?.code === 200 || resData?.code === 201) {
-      showSuccessToast('Success', resData?.message);
-      navigation.goBack()
-      
-    } else {
-      showErrorToast('Failed', resData?.message || 'Something went wrong');
-    }
-  } catch (error) {
-    showErrorToast('Failed', error?.message || 'Error slots booking');
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
-
   useEffect(() => {
-  if (item?.slot?.slotsByDay) {
-    const formatted = weekdays.reduce((acc, day) => {
-      // slotsByDay se matching day find karo
-      const found = item.slot.slotsByDay.find(s => s.dayOfWeek === day);
-      if (found && found.slots.length > 0) {
-        acc[day] = found.slots.map(s => ({
-          start: s.startTime,
-          end: s.endTime,
-        }));
-      } else {
-        acc[day] = [{ start: '', end: '' }];
-      }
-      return acc;
-    }, {});
-    setSlots(formatted);
-  }
+    if (item?.slot?.slotsByDay) {
+      const formatted = weekdays.reduce((acc, day) => {
+        // slotsByDay se matching day find karo
+        const found = item.slot.slotsByDay.find(s => s.dayOfWeek === day);
+        if (found && found.slots.length > 0) {
+          acc[day] = found.slots.map(s => ({
+            start: s.startTime,
+            end: s.endTime,
+          }));
+        } else {
+          acc[day] = [{start: '', end: ''}];
+        }
+        return acc;
+      }, {});
+      setSlots(formatted);
+    }
 
-  // agar clinic select karna hai to default bhi set karlo
-  if (item?.clinicName) {
-    setSelectedClinic({ clinicName: item.clinicName, _id: item.slot?.doctorClinicId });
-  }
+    // agar clinic select karna hai to default bhi set karlo
+    if (item?.clinicName) {
+      setSelectedClinic({
+        clinicName: item.clinicName,
+        _id: item.slot?.doctorClinicId,
+      });
+    }
 
-  // slotType bhi set karo
-  if (item?.slot?.slotType) {
-    setSlotType(item.slot.slotType === 'offline' ? 'Offline' : 'Online');
-  }
-}, [item]);
+    // slotType bhi set karo
+    if (item?.slot?.slotType) {
+      setSlotType(item.slot.slotType === 'offline' ? 'Offline' : 'Online');
+    }
+  }, [item]);
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -830,7 +828,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 20,
   },
-  btnText: {color: '#fff', textAlign: 'center', fontWeight: '600'},
+  btnText: {color: Colors.BLACK, textAlign: 'center', fontWeight: '600'},
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -856,9 +854,10 @@ const styles = StyleSheet.create({
   },
   pickerRow: {flexDirection: 'row', justifyContent: 'space-between'},
   optionBtn: {
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical:5,
     margin: 5,
-    borderWidth: 1,
+    borderWidth: 0.5,
     borderRadius: 8,
     borderColor: '#ccc',
     alignItems: 'center',
@@ -870,16 +869,17 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   cancelBtn: {
-    backgroundColor: 'red',
     padding: 10,
-    borderRadius: 8,
+    borderRadius: 100,
     flex: 1,
     marginRight: 5,
+    borderWidth: 1,
+    borderColor: Colors.APPCOLOR,
   },
   doneBtn: {
-    backgroundColor: 'green',
+    backgroundColor: Colors.APPCOLOR,
     padding: 10,
-    borderRadius: 8,
+    borderRadius: 100,
     flex: 1,
     marginLeft: 5,
   },

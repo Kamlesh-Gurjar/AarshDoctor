@@ -8,6 +8,7 @@ import CustomPicker from './common/CustomPicker';
 import ClinicCard from './cards/ClinicCard';
 import FilterModal from './common/FilterModal';
 import ClinicDropdown from './common/ClinicDropdown';
+import DateRangeModal from './common/DateRangeModal';
 
 export {
   InputCompt,
@@ -19,6 +20,6 @@ export {
   CustomPicker,
   ClinicCard,
   FilterModal,
-  ClinicDropdown
-  
+  ClinicDropdown,
+  DateRangeModal,
 };
