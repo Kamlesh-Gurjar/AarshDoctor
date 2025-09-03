@@ -6,6 +6,7 @@ import ApiRequest from '../../network/ApiRequest';
 import {decryptData} from '../../utils/encryptionUtils';
 import {ApiRoutes} from '../../utils/ApiRoutes';
 import {useFocusEffect} from '@react-navigation/native';
+import {setDoctorDetails} from '../../redux/redux_slice/DoctorDetailsSlice';
 
 const AppointmentController = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -86,7 +87,7 @@ const AppointmentController = () => {
       });
 
       const decrypted = decryptData(response?.data);
-
+      dispatch(setDoctorDetails(decrypted?.data));
       await getAllAppointments(decrypted?.data?._id);
       await getAllLatestAppointments(decrypted?.data?._id);
     } catch (error) {
