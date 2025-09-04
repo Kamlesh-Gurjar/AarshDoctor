@@ -187,7 +187,7 @@ const AddClinic = ({navigation}) => {
               <Text style={styles.label}>Search Location</Text>
               <GooglePlacesAutocomplete
                 placeholder="Search location..."
-                textInputProps={{placeholderTextColor: Colors.GRAY}}
+                textInputProps={{placeholderTextColor: Colors.GRAY,fontFamily:Fonts.PoppinsRegular}}
                 fetchDetails={true}
                 // onPress={(data, details = null) => {
                 //   const lat = details?.geometry.location.lat;
@@ -310,9 +310,9 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
-    marginTop: 10,
+     marginTop: 10,
     color: '#333',
+    fontFamily:Fonts.PoppinsMedium
   },
   error: {
     color: 'red',

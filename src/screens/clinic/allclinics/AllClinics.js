@@ -171,9 +171,12 @@ import Fonts from '../../../theme/Fonts';
 
 import Icon from '@react-native-vector-icons/material-icons';
 import FIcon from '@react-native-vector-icons/material-icons';
+import styles from './styles';
 
 const AllClinics = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   const [clinics, setClinics] = useState([]);
   const [deleteModal, setDeleteModal] = useState(false);
   const [selectedClinic, setSelectedClinic] = useState(null);
@@ -209,7 +212,7 @@ const AllClinics = ({navigation}) => {
   const deleteDoctorClinic = async values => {
     const token = await AsyncStorage.getItem('userToken');
     try {
-      setIsLoading(true);
+      setDeleteLoading(true);
       const response = await ApiRequest({
         BASEURL: ApiRoutes.deleteDoctorClinic,
         method: 'POST',
@@ -232,7 +235,7 @@ const AllClinics = ({navigation}) => {
       console.error('Clinic Fetch Error:', error?.message || error);
       showErrorToast('Failed', error?.message || 'Error fetching clinics');
     } finally {
-      setIsLoading(false);
+      setDeleteLoading(false);
     }
   };
 
@@ -265,8 +268,9 @@ const AllClinics = ({navigation}) => {
           <View style={styles.actions}>
             <TouchableOpacity
               style={[styles.iconBtn, styles.editBtn]}
-              onPress={() => {navigation.navigate("EditClinic",{clinicData:item})
-                }}>
+              onPress={() => {
+                navigation.navigate('EditClinic', {clinicData: item});
+              }}>
               <Icon name="edit" size={18} color={Colors.APPCOLOR} />
             </TouchableOpacity>
             <TouchableOpacity
@@ -301,7 +305,7 @@ const AllClinics = ({navigation}) => {
       <HeaderCompt
         title={'Clinics'}
         addClicnicbutton={true}
-        onPressAddClinic={() =>  navigation.navigate("AddClinic")}
+        onPressAddClinic={() => navigation.navigate('AddClinic')}
       />
       {isLoading ? (
         <ActivityIndicator
@@ -350,7 +354,11 @@ const AllClinics = ({navigation}) => {
               <Pressable
                 style={[styles.btn, {backgroundColor: 'red'}]}
                 onPress={confirmDelete}>
-                <Text style={[styles.btnText, {color: '#fff'}]}>Delete</Text>
+                {deleteLoading ? (
+                  <ActivityIndicator color={Colors.WHITE} />
+                ) : (
+                  <Text style={[styles.btnText, {color: '#fff'}]}>Delete</Text>
+                )}
               </Pressable>
             </View>
           </View>
@@ -361,115 +369,3 @@ const AllClinics = ({navigation}) => {
 };
 
 export default AllClinics;
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: Colors.WHITE,
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-    borderLeftWidth: 5,
-    borderLeftColor: Colors.APPCOLOR,
-  },
-  cardContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  clinicInfo: {
-    flex: 1,
-    marginRight: 10,
-  },
-  clinicName: {
-    fontSize: 18,
-    color: Colors.BLACK,
-    marginBottom: 6,
-    fontFamily: Fonts.PoppinsMedium,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  infoIcon: {
-    marginRight: 8,
-  },
-  locationText: {
-    fontSize: 13,
-    color: '#555',
-    fontFamily: Fonts.PoppinsRegular,
-    flexShrink: 1, // Allows text to wrap
-  },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-  },
-  iconBtn: {
-    padding: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginLeft: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  editBtn: {
-    borderColor: Colors.APPCOLOR,
-  },
-  deleteBtn: {
-    borderColor: 'red',
-  },
-  // Modal Styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalBox: {
-    width: '80%',
-    backgroundColor: Colors.WHITE,
-    borderRadius: 12,
-    padding: 20,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontFamily: Fonts.PoppinsMedium,
-    marginBottom: 10,
-    color: Colors.BLACK,
-    textAlign: 'center',
-  },
-  modalMsg: {
-    fontSize: 15,
-    color: '#444',
-    marginBottom: 25,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around', // Changed to space-around for better spacing
-    marginTop: 10,
-  },
-  btn: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    minWidth: 100, // Ensure buttons have a minimum width
-    alignItems: 'center',
-  },
-  btnText: {
-    fontSize: 15,
-    fontFamily: Fonts.PoppinsMedium,
-  },
-});

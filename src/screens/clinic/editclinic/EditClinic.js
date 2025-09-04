@@ -200,7 +200,10 @@ const EditClinic = ({navigation, route}) => {
               <Text style={styles.label}>Search Location</Text>
               <GooglePlacesAutocomplete
                 placeholder="Search location..."
-                textInputProps={{placeholderTextColor: Colors.GRAY}}
+                textInputProps={{
+                  placeholderTextColor: Colors.GRAY,
+                  fontFamily: Fonts.PoppinsRegular,
+                }}
                 fetchDetails={true}
                 // Set defaultValue to pre-fill the search input
                 defaultValue={values.location}
@@ -304,6 +307,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginTop: 10,
     color: '#333',
+    fontFamily: Fonts.PoppinsMedium,
   },
   error: {
     color: 'red',

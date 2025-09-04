@@ -17,6 +17,10 @@
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+     <!-- For notification -->
+    <!-- <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" /> -->
     
      <application
       android:name=".MainApplication"
@@ -26,6 +30,17 @@
       android:allowBackup="false"
       android:theme="@style/AppTheme"
       android:supportsRtl="true">
+
+       <!-- Add the Firebase Messaging service -->
+        <!-- <service
+            android:name="com.google.firebase.messaging.FirebaseMessagingService"
+            android:stopWithTask="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service> -->
+
+              <!-- for map in android  -->
       <meta-data
         android:name="com.google.android.geo.API_KEY"
         android:value="AIzaSyBaVSE5Cx8FTD-Ql7uSbtYIM0KW-kLHbOA"/>

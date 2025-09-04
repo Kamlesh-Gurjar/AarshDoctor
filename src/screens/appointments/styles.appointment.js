@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
     marginTop: 50,
     fontSize: 16,
     color: Colors.GRAY,
+    fontFamily: Fonts.PoppinsRegular,
   },
 });
 
