@@ -421,27 +421,35 @@ const AppointmentCard = ({item, setActiveCardId, activeCardId}) => {
               navigation.navigate('AddPrescription');
             }}>
             <Icon name="description" size={16} color={Colors.TEXT_DARK} />
-            <Text style={styles.popupText}>Add Prescription</Text>
+            <Text style={styles.popupText}>
+              {item.status == 'Completed'
+                ? 'Update Prescription'
+                : 'Add Prescription'}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.popupOption}
-            onPress={() => {
-              setActiveCardId(null); // Close popup
-              navigation.navigate('RescheduleAppointment', {item: item});
-            }}>
-            <Icon name="event-note" size={16} color={Colors.TEXT_DARK} />
-            <Text style={styles.popupText}>Reschedule Appointment</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.popupOption}
-            // onPress={() => {
-            //   setActiveCardId(null); // Close popup
-            //   navigation.navigate('RescheduleAppointment', {item: item});
-            // }}
-            onPress={() => setIsVisible(!isVisible)}>
-            <Icon name="send" size={16} color={Colors.TEXT_DARK} />
-            <Text style={styles.popupText}>Refer to Lab</Text>
-          </TouchableOpacity>
+          {item.status == 'Completed' ? null : (
+            <TouchableOpacity
+              style={styles.popupOption}
+              onPress={() => {
+                setActiveCardId(null); // Close popup
+                navigation.navigate('RescheduleAppointment', {item: item});
+              }}>
+              <Icon name="event-note" size={16} color={Colors.TEXT_DARK} />
+              <Text style={styles.popupText}>Reschedule Appointment</Text>
+            </TouchableOpacity>
+          )}
+          {item.status == 'Completed' ? null : (
+            <TouchableOpacity
+              style={styles.popupOption}
+              // onPress={() => {
+              //   setActiveCardId(null); // Close popup
+              //   navigation.navigate('RescheduleAppointment', {item: item});
+              // }}
+              onPress={() => setIsVisible(!isVisible)}>
+              <Icon name="send" size={16} color={Colors.TEXT_DARK} />
+              <Text style={styles.popupText}>Refer to Lab</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
 

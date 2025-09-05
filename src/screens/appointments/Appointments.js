@@ -207,8 +207,6 @@
 
 // export default Appointments;
 
-
-
 // import React, {useState} from 'react';
 // import {
 //   View,
@@ -410,9 +408,6 @@
 
 // export default Appointments;
 
-
-
-
 import React, {useState, useEffect, useCallback, memo} from 'react';
 import {
   View,
@@ -443,6 +438,9 @@ import AppointmentController from './AppointmentController';
 
 // Styles
 import styles from './styles.appointment';
+
+import {requestUserPermission} from '../../utils/NotificationService';
+import NotificationPermissionRequest from '../../permissions/NotificationPermissionRequest';
 
 /* ------------------------------------------------------------------
    Custom Tab Bar Component
@@ -532,12 +530,14 @@ const Appointments = ({navigation}) => {
   /* ---------------- Dynamic Variables ---------------- */
   const isLatestTab = activeTab === 'Latest';
   const currentData = isLatestTab ? allLatestAppointment : appointments;
-  const isLoadingData = isLatestTab
-    ? allLatestAppointmentLoading
-    : isLoading;
+  const isLoadingData = isLatestTab ? allLatestAppointmentLoading : isLoading;
   const emptyMessage = isLatestTab
     ? 'No Appointments Yet'
     : 'No Appointments found.';
+
+  // useEffect(() => {
+  //   requestUserPermission();
+  // }, []);
 
   /* ---------------- Render ---------------- */
   return (
@@ -553,8 +553,8 @@ const Appointments = ({navigation}) => {
             ? doctorDetails?.profilePic.replace('.avif', '.jpg') // fallback
             : doctorDetails?.profilePic,
         }}
-        rightIcon={imageindex.edit}
-        onPressRight={() => navigation.navigate('ProfileDetails')}
+        rightIcon={imageindex.notification}
+        onPressRight={() => navigation.navigate('Notification')}
       />
 
       {/* Tab Bar */}
@@ -563,7 +563,11 @@ const Appointments = ({navigation}) => {
       {/* Content */}
       <View style={styles.contentContainer}>
         {isLoadingData ? (
-          <ActivityIndicator style={{flex: 1}} size="large" color={Colors.GRAY} />
+          <ActivityIndicator
+            style={{flex: 1}}
+            size="large"
+            color={Colors.GRAY}
+          />
         ) : (
           <FlatList
             data={currentData}
@@ -618,6 +622,7 @@ const Appointments = ({navigation}) => {
         onClose={() => setIsFilterModalVisible(false)}
         onApply={handleApplyFilter}
       />
+      <NotificationPermissionRequest/>
     </SafeAreaView>
   );
 };

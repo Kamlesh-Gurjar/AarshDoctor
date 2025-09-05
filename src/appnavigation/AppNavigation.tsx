@@ -24,6 +24,7 @@ import MeetingScreen from '../screens/meetingscreen/MeetingScreen';
 import AddClinic from '../screens/clinic/addclinic/AddClinic';
 import EditClinic from '../screens/clinic/editclinic/EditClinic';
 import AllClinics from '../screens/clinic/allclinics/AllClinics';
+import Notification from '../screens/notifications/Notification';
 
 const AppNavigation = () => {
   // const [isFirstLaunch, setIsFirstLaunch] = useState(null);
@@ -89,6 +90,9 @@ const AppNavigation = () => {
         <Stack.Screen name="AddClinic" component={AddClinic} />
         <Stack.Screen name="EditClinic" component={EditClinic} />
         <Stack.Screen name="AllClinics" component={AllClinics} />
+
+        {/* Notification */}
+        <Stack.Screen name="Notification" component={Notification} />
       </Stack.Navigator>
     </NavigationContainer>
   );

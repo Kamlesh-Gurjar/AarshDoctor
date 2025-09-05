@@ -52,4 +52,8 @@ export const ApiRoutes = {
 
   updateDoctorClinicDetail:
     AppConstant.BASEURL + '/api/doctor/update-doctor-clinic',
+
+    updateFcmToken:AppConstant.BASEURL+"",
+
+    getAllNotification:AppConstant.BASEURL+"/api/admin/get-all-notification"
 };

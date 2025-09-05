@@ -13,17 +13,25 @@ import {
   showSuccessToast,
   showToast,
 } from '../../utils/HelperFuntions';
+import messaging from '@react-native-firebase/messaging';
 
 const LoginController = () => {
   const [isLoading, setIsLoading] = useState(false);
+
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
   const handleAppSubmit = async values => {
+    const fcmtoken = await messaging().getToken();
+
+    console.log('---------fhdegjbffjfujf---fcmtoken-------', fcmtoken);
+
     const req = {
       email: values.email,
       password: values.password,
       isWeb: false,
+      deviceToken: fcmtoken,
+      deviceType: 'mobile',
     };
 
     try {

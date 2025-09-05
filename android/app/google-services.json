@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "449585352806",
+    "project_id": "jobprtal-be219",
+    "storage_bucket": "jobprtal-be219.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:449585352806:android:5e94f06a74faf4dc1f9da7",
+        "android_client_info": {
+          "package_name": "com.aarshdoctor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGNQjTOLhuTmLVUo9hrZ7oIFvzppHrQ70"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

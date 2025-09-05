@@ -14,4 +14,5 @@ export default {
   nowifi: require('../images/nowifi.png'),
   sort: require('../images/sort.png'),
   nolatest: require('../images/nolatest.png'),
+  notification: require('../images/notification.png'),
 };

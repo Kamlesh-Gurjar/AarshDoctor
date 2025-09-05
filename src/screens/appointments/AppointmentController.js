@@ -147,8 +147,39 @@ const AppointmentController = () => {
     return true;
   };
 
+  const requestNotificationPermission = async () => {
+    if (Platform.OS === 'android') {
+      if (Platform.Version >= 33) {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+            {
+              title: 'Notification Permission',
+              message:
+                'This app would like to send you notifications for updates.',
+              buttonPositive: 'Allow',
+              buttonNegative: 'Deny',
+            },
+          );
+
+          return granted === PermissionsAndroid.RESULTS.GRANTED;
+        } catch (err) {
+          console.warn(err);
+          return false;
+        }
+      } else {
+        // Android 12 और नीचे के लिए permission auto-granted है
+        return true;
+      }
+    } else {
+      // iOS पर अलग से request करना पड़ता है (Firebase या Notifee से)
+      return true;
+    }
+  };
+
   useEffect(() => {
     requestPermissions();
+    requestNotificationPermission();
   }, []);
 
   return {
@@ -165,3 +196,12 @@ const AppointmentController = () => {
 };
 
 export default AppointmentController;
+
+// const askNotif = async () => {
+//   const allowed = await requestNotificationPermission();
+//   if (allowed) {
+//     console.log('✅ Notification permission granted');
+//   } else {
+//     console.log('❌ Notification permission denied');
+//   }
+// };
